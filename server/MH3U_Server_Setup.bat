@@ -20,7 +20,13 @@ $ServerName = 'MH3U Online'
 $Dir        = 'C:\MH3U-Server'
 $TaskName   = 'MH3U Server'
 $Repo       = 'Matt-Wood-23/mh3u-revival'
-$UdpPorts   = @('1223-1224', '10025', '27100-27387')
+# Players on the server at once. Also sets how many hunts can run at once (4 players each) and
+# the relay's UDP port range (6 ports per hunt: with MH3U_RELAY=force every hunt goes through
+# this server, and a join is refused once the ports run out).
+$MaxPlayers = 2048
+$MaxRooms   = [int][Math]::Ceiling($MaxPlayers / 4)
+$RelayPortStart = 27100
+$RelayPortEnd   = $RelayPortStart + $MaxRooms * 6 - 1
 # Install the newest release even when it's marked as a test (pre-)release. v0.3.0-beta is one,
 # and it's the first with named halls and the admin dashboard; the older stable v0.2.1-beta has
 # a single hall and no dashboard. Set to $false to stay on stable releases only.
@@ -31,10 +37,12 @@ $Prerelease = $true
 $HallNames  = 'Low Rank 1,Low Rank 2,Low Rank 3,Low Rank 4,Low Rank 5,' +
               'High Rank 1,High Rank 2,High Rank 3,High Rank 4,High Rank 5,' +
               'G Rank 1,G Rank 2,G Rank 3,G Rank 4,G Rank 5'
-$HallMax    = 100
-# What an earlier version of this setup wrote. Found unchanged, they become $HallNames / $HallMax.
+# 15 x 150 = 2250 places for 2048 players. The server doesn't enforce it; it's the capacity the
+# game shows, and the game won't join a hall that shows as full.
+$HallMax    = 150
+# What earlier versions of this setup wrote. Found unchanged, they become $HallNames / $HallMax.
 $OldHallNames = 'Low Rank,High Rank,G Rank'
-$OldHallMax   = 32
+$OldHallMax   = @(32, 100)
 
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
@@ -79,8 +87,9 @@ function Add-MissingSettings([string]$Path) {
     # Settings this setup learned after your server-settings.txt was made: added once. Your own
     # values are never changed; only the halls an earlier setup wrote, if still as it wrote them.
     $lines = @(Get-Content $Path -ErrorAction SilentlyContinue)
-    foreach ($pair in @(@("MH3U_HALL_NAMES=$OldHallNames", "MH3U_HALL_NAMES=$HallNames"),
-                        @("MH3U_HALL_MAX=$OldHallMax", "MH3U_HALL_MAX=$HallMax"))) {
+    $pairs = @(, @("MH3U_HALL_NAMES=$OldHallNames", "MH3U_HALL_NAMES=$HallNames"))
+    foreach ($m in $OldHallMax) { $pairs += , @("MH3U_HALL_MAX=$m", "MH3U_HALL_MAX=$HallMax") }
+    foreach ($pair in $pairs) {
         if ($lines -ccontains $pair[0]) {
             $lines = @($lines | ForEach-Object { if ($_ -ceq $pair[0]) { $pair[1] } else { $_ } })
             Set-Content -Path $Path -Value $lines -Encoding ASCII
@@ -98,8 +107,36 @@ function Add-MissingSettings([string]$Path) {
         $new += '# Hunters per hall (default 16). A hunt itself stays at 4, the game''s own limit.'
         $new += "MH3U_HALL_MAX=$HallMax"
     }
+    if ($text -notmatch '(?m)^\s*MH3U_MAX_CONNECTIONS\s*=') {
+        $new += '# Players on the server at once (default 128), and hunts at once (default 48).'
+        $new += "MH3U_MAX_CONNECTIONS=$MaxPlayers"
+    }
+    if ($text -notmatch '(?m)^\s*MH3U_MAX_ROOMS\s*=') {
+        $new += "MH3U_MAX_ROOMS=$MaxRooms"
+    }
+    if ($text -notmatch '(?m)^\s*MH3U_RELAY_PORT_(START|END)\s*=') {
+        $new += '# UDP ports for relayed hunts: 6 per hunt. This setup opens them in the Windows Firewall;'
+        $new += '# open them in your VPS provider''s firewall too.'
+        $new += "MH3U_RELAY_PORT_START=$RelayPortStart"
+        $new += "MH3U_RELAY_PORT_END=$RelayPortEnd"
+    }
+    if ($text -notmatch '(?m)^\s*MH3U_RELAY_ALL\s*=') {
+        $new += '# Relay guest-to-guest links too, so no player ever sees another player''s IP. Needs a'
+        $new += '# server newer than v0.3.0-beta; older servers ignore it.'
+        $new += 'MH3U_RELAY_ALL=1'
+    }
     if ($new) { Add-Content -Path $Path -Value $new -Encoding ASCII }
     return ($new | Where-Object { $_ -match '^MH3U_' })
+}
+
+function Get-UdpPorts {
+    # The game's ports plus the relay range the server settings ask for.
+    $start = $RelayPortStart; $end = $RelayPortEnd
+    foreach ($line in (Get-Content (Join-Path $Dir 'server-settings.txt') -ErrorAction SilentlyContinue)) {
+        if ($line -match '^\s*MH3U_RELAY_PORT_START\s*=\s*(\d+)') { $start = [int]$Matches[1] }
+        if ($line -match '^\s*MH3U_RELAY_PORT_END\s*=\s*(\d+)') { $end = [int]$Matches[1] }
+    }
+    @('1223-1224', '10025', "$start-$end")
 }
 
 function Get-SavedPublicIP {
@@ -188,6 +225,7 @@ while ($true) {
 '@ | Set-Content -Path (Join-Path $Dir 'run-server.ps1') -Encoding UTF8
 
     Say 'Opening the Windows Firewall'
+    $UdpPorts = Get-UdpPorts
     Get-NetFirewallRule -DisplayName 'MH3U Server*' -ErrorAction SilentlyContinue | Remove-NetFirewallRule
     New-NetFirewallRule -DisplayName 'MH3U Server (game, UDP)' -Direction Inbound -Action Allow -Protocol UDP `
         -LocalPort $UdpPorts -Profile Any | Out-Null
