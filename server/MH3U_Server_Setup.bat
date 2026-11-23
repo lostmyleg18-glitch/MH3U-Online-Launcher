@@ -31,9 +31,10 @@ $Prerelease = $true
 $HallNames  = 'Low Rank 1,Low Rank 2,Low Rank 3,Low Rank 4,Low Rank 5,' +
               'High Rank 1,High Rank 2,High Rank 3,High Rank 4,High Rank 5,' +
               'G Rank 1,G Rank 2,G Rank 3,G Rank 4,G Rank 5'
-$HallMax    = 32
-# The halls an earlier version of this setup wrote. Found unchanged, they become $HallNames.
+$HallMax    = 100
+# What an earlier version of this setup wrote. Found unchanged, they become $HallNames / $HallMax.
 $OldHallNames = 'Low Rank,High Rank,G Rank'
+$OldHallMax   = 32
 
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
@@ -78,11 +79,13 @@ function Add-MissingSettings([string]$Path) {
     # Settings this setup learned after your server-settings.txt was made: added once. Your own
     # values are never changed; only the halls an earlier setup wrote, if still as it wrote them.
     $lines = @(Get-Content $Path -ErrorAction SilentlyContinue)
-    $old = "MH3U_HALL_NAMES=$OldHallNames"
-    if ($lines -ccontains $old) {
-        $lines = @($lines | ForEach-Object { if ($_ -ceq $old) { "MH3U_HALL_NAMES=$HallNames" } else { $_ } })
-        Set-Content -Path $Path -Value $lines -Encoding ASCII
-        Ok "Changed in your settings: MH3U_HALL_NAMES=$HallNames"
+    foreach ($pair in @(@("MH3U_HALL_NAMES=$OldHallNames", "MH3U_HALL_NAMES=$HallNames"),
+                        @("MH3U_HALL_MAX=$OldHallMax", "MH3U_HALL_MAX=$HallMax"))) {
+        if ($lines -ccontains $pair[0]) {
+            $lines = @($lines | ForEach-Object { if ($_ -ceq $pair[0]) { $pair[1] } else { $_ } })
+            Set-Content -Path $Path -Value $lines -Encoding ASCII
+            Ok "Changed in your settings: $($pair[1])"
+        }
     }
     $text = $lines -join "`n"
     $new = @()

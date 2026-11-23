@@ -28,10 +28,12 @@ uses one core, and even 48 full hunts need only a few Mbit/s.
   "MH3U Server dashboard" shortcut on the VPS desktop. It only opens on the VPS itself.
 - **Settings:** `C:\MH3U-Server\server-settings.txt`. Run the setup again after changing them.
 - **Gathering halls:** by default there are 15, the server's maximum: Low Rank 1-5,
-  High Rank 1-5 and G Rank 1-5, with room for 32 hunters each. Each hall lists only the rooms
+  High Rank 1-5 and G Rank 1-5, with room for 100 hunters each. Each hall lists only the rooms
   made in it. Change `MH3U_HALL_NAMES` (comma-separated) and `MH3U_HALL_MAX` in the settings.
   A hunt itself stays at 4 players, the game's own limit.
-- **Players at once:** 128 (`MH3U_MAX_CONNECTIONS`), 48 hunts at once.
+- **Players at once:** 128 on the whole server (`MH3U_MAX_CONNECTIONS`), 48 hunts at once. To
+  allow more players, add e.g. `MH3U_MAX_CONNECTIONS=256` to the settings and run the setup
+  again.
 - The setup installs the newest server release, test releases included (v0.3.0-beta is the
   first with several halls and the dashboard). To stay on stable releases only, set
   `$Prerelease = $false` at the top of the file.
