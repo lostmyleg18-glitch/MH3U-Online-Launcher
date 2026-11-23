@@ -1,0 +1,50 @@
+diff --git a/src/Cafe/OS/libs/snd_user/snd_user.cpp b/src/Cafe/OS/libs/snd_user/snd_user.cpp
+index 4c2fedf..60325b0 100644
+--- a/src/Cafe/OS/libs/snd_user/snd_user.cpp
++++ b/src/Cafe/OS/libs/snd_user/snd_user.cpp
+@@ -1236,12 +1236,11 @@ namespace snd_user
+ 			if(!clearChannel[channel])
+ 				continue;
+ 			sint32be* channelPtr = auxSamples->channelSamples[channel].GetPtr();
+-			while (sampleCount)
+-			{
+-				*channelPtr = 0;
+-				channelPtr++;
+-				sampleCount--;
+-			}
++			if (!channelPtr)
++				continue;
++			// clear every requested channel. Whatever stays in the buffer is mixed back into the output one AUX frame later
++			for (size_t i = 0; i < sampleCount; i++)
++				channelPtr[i] = 0;
+ 		}
+ 
+ 	}
+@@ -1272,7 +1271,7 @@ namespace snd_user
+ 	void AXFXReverbHiCallback(AUXCBSAMPLEDATA* auxSamples, AXFXReverbHiData* reverbHi)
+ 	{
+ 		// todo - implement me
+-		__UnimplementedFXCallback(auxSamples, 96, true, true, true, false, false, false);
++		__UnimplementedFXCallback(auxSamples, AXGetInputSamplesPerFrame(), true, true, true, false, false, false);
+ 	}
+ 
+ 	/* AXFXMultiChReverb */
+@@ -1301,7 +1300,8 @@ namespace snd_user
+ 	void AXFXMultiChReverbCallback(AUXCBSAMPLEDATA* auxSamples, AXFXMultiChReverbData* reverbHi, AXAUXCBCHANNELINFO* auxInfo)
+ 	{
+ 		// todo - implement me
+-		__UnimplementedFXCallback(auxSamples, auxInfo->numSamples, true, true, true, true, true, true);
++		const uint32 numChannels = auxInfo->numChannels; // 6 for TV, 4 for DRC
++		__UnimplementedFXCallback(auxSamples, auxInfo->numSamples, numChannels > 0, numChannels > 1, numChannels > 2, numChannels > 3, numChannels > 4, numChannels > 5);
+ 	}
+ 
+ 	/* AXFXReverbStd */
+@@ -1329,7 +1329,7 @@ namespace snd_user
+ 	void AXFXReverbStdExpCallback(AUXCBSAMPLEDATA* auxSamples, AXFXReverbStdData* reverbData)
+ 	{
+ 		// todo - implement me
+-		__UnimplementedFXCallback(auxSamples, 96, true, true, true, false, false, false);
++		__UnimplementedFXCallback(auxSamples, AXGetInputSamplesPerFrame(), true, true, true, false, false, false);
+ 	}
+ 
+ 	class : public COSModule

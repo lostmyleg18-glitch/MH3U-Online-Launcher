@@ -1,0 +1,6 @@
+# the server setup is a .bat file: store it exactly as it is (Windows line endings)
+*.bat -text
+*.exe binary
+*.dll binary
+*.ttf binary
+*.ico binary

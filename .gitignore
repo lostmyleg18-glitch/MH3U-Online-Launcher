@@ -1,0 +1,9 @@
+# build output
+dist/
+build/
+*.spec
+__pycache__/
+*.pyc
+
+# your server's address: built into MH3U_Play.exe, never uploaded
+launcher/server.txt

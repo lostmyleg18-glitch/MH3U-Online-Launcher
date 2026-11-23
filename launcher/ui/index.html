@@ -1,0 +1,851 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>MH3U Online</title>
+<style>
+@font-face { font-family: "Cinzel"; src: url("Cinzel.ttf") format("truetype"); font-weight: 400 900; font-display: block; }
+:root {
+  --cream: #f3e4c2; --cream2: #d8c6a0; --muted: #9a8a6c; --dim: #6f6350;
+  --ok: #95d873; --bad: #ef6a52; --warn: #f2b45c;
+  --ui: "Bahnschrift", "Segoe UI", sans-serif;
+  --serif: "Cinzel", "Palatino Linotype", Georgia, serif;
+  --gold-btn: linear-gradient(180deg, #fff2a2 0%, #fbd955 12%, #f3c232 46%, #e3a21b 54%, #f0b934 88%, #ffd76a 100%);
+  --bronze-btn: linear-gradient(180deg, #7a5a33, #4a3218 50%, #3a2610 54%, #533a1c);
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; overflow: hidden; background: #080605; color: var(--cream);
+  font: 14px/1.4 var(--ui); user-select: none; -webkit-font-smoothing: antialiased; }
+button { font: inherit; }
+/*CUSTOM_ART*/
+
+/* ------------------------------------------------------------------ window frame */
+.frame { position: fixed; inset: 0; display: flex; flex-direction: column; background: #0b0807; border: 2px solid #050302;
+  box-shadow: inset 0 0 0 1px #6b4a26, inset 0 0 0 4px #2b1b0d, inset 0 0 0 5px #8a6436, inset 0 0 0 7px #130c06; }
+.grunge { position: relative; }
+.grunge::after { content: ""; position: absolute; inset: 0; pointer-events: none; mix-blend-mode: overlay; opacity: .3;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .5  0 0 0 0 .5  0 0 0 0 .5  0 0 0 .9 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>"); }
+
+/* ------------------------------------------------------------------ top bar */
+.topbar { position: relative; height: 56px; flex: none; z-index: 20; margin: 7px 7px 0;
+  background: linear-gradient(180deg, #3a2814 0%, #1e1409 55%, #120b05 100%); border-bottom: 1px solid #000; box-shadow: 0 3px 8px rgba(0,0,0,.6); }
+.band { position: absolute; left: 54px; right: 92px; top: 9px; height: 38px;
+  background: linear-gradient(180deg, #b48a52 0%, #8a6334 9%, #5e3f1e 30%, #3e2810 52%, #4c3216 70%, #6c4b25 92%, #a37b45 100%);
+  box-shadow: inset 0 1px 0 #e2bf86, inset 0 -1px 0 #2a1907, 0 0 0 1px #140c05, 0 0 0 2px #6a4a25, 0 0 0 3px #120b05; }
+.band::before { content: ""; position: absolute; inset: 4px 0; border-top: 1px solid rgba(255,220,160,.18); border-bottom: 1px solid rgba(0,0,0,.45); }
+.nav { position: absolute; inset: 0; display: flex; align-items: stretch; }
+.nav .half { flex: 1; min-width: 0; display: flex; align-items: stretch; justify-content: space-around; }
+/* The band starts 54px from the left but ends 92px from the right, so its middle sits 19px left of the
+   window's middle, where the logo is. Size the left half so the 300px gap is centred under the logo. */
+.nav .half:first-child { flex: none; width: calc(50% + 19px - 150px); }
+.nav .gap { width: 300px; flex: none; }
+.navbtn { position: relative; border: 0; background: none; cursor: pointer; padding: 0 8px; color: var(--cream);
+  font: 600 14px/1 var(--ui); letter-spacing: .1em; text-transform: uppercase; white-space: nowrap;
+  text-shadow: 0 1px 0 #000, 0 0 6px rgba(0,0,0,.9), 0 0 2px #000; transition: color .12s; }
+.navbtn:hover { color: #fff6cf; text-shadow: 0 1px 0 #000, 0 0 10px rgba(255,200,110,.55); }
+.navbtn.on { color: #f8d34e; }
+.sep { width: 22px; flex: none; position: relative; }
+.sep::before, .sep::after { content: ""; position: absolute; left: 50%; top: -2px; bottom: -2px; width: 7px; margin-left: -3.5px;
+  background: linear-gradient(90deg, #2a1806, #7a5329 45%, #c9a067 50%, #6a4520 55%, #1e1104); box-shadow: 0 0 0 1px rgba(0,0,0,.6); }
+.sep::before { transform: skewX(24deg); } .sep::after { transform: skewX(-24deg); }
+.cap { position: absolute; top: 4px; left: 4px; width: 46px; height: 48px; display: grid; place-items: center;
+  background: radial-gradient(circle at 50% 35%, #6d4d2a, #2a1a0b 70%); border-radius: 6px;
+  box-shadow: inset 0 0 0 1px #c19a62, inset 0 0 0 3px #2a1a0a, inset 0 0 0 4px #7a5732, 0 2px 6px rgba(0,0,0,.7); }
+.cap svg { width: 22px; height: 26px; }
+.winbtns { position: absolute; right: 6px; top: 12px; display: flex; gap: 6px; }
+.winbtn { width: 34px; height: 32px; border: 0; cursor: pointer; display: grid; place-items: center; color: #f3e4c2;
+  background: linear-gradient(180deg, #8f6a3d, #4f3418 55%, #3a250f); border-radius: 3px; box-shadow: inset 0 1px 0 #e1bd84, 0 0 0 1px #140b04, 0 2px 4px rgba(0,0,0,.6); }
+.winbtn:hover { background: linear-gradient(180deg, #b08350, #6a461f 55%, #4a3014); }
+.winbtn.close:hover { background: linear-gradient(180deg, #d4583e, #8e2614 60%, #6b1b0d); }
+.winbtn svg { width: 12px; height: 12px; }
+.drag { position: absolute; inset: 0; }
+
+/* logo plaque */
+.logo { position: absolute; left: 50%; top: 0; width: 280px; height: 80px; margin-left: -140px; z-index: 25; pointer-events: none;
+  filter: drop-shadow(0 6px 10px rgba(0,0,0,.75)); }
+.logo svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.logo .words { position: absolute; left: 0; right: 0; top: 12px; text-align: center; }
+/* No -webkit-text-stroke here: Cinzel is a variable font whose letters are built from overlapping
+   shapes, and a stroke draws every overlap as a line inside the M, H and U. The dark outline is made
+   from shadows instead, which follow only the letter's outer edge. */
+.logo .mh { font: 900 36px/1 var(--serif); letter-spacing: .06em; color: #f4d27c;
+  text-shadow: 0 -1px 0 #fff2c2, .8px 0 0 #2b1704, -.8px 0 0 #2b1704, 0 .8px 0 #2b1704,
+               0 2px 0 #7a4c14, 0 3px 0 #3a2208, 0 4px 6px rgba(0,0,0,.8); }
+.logo .sub { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 6px;
+  font: 600 12px/1 var(--ui); letter-spacing: .5em; padding-left: .5em; color: #e8c37a; text-shadow: 0 1px 0 #000; }
+.logo .sub::before, .logo .sub::after { content: ""; width: 34px; height: 1px; background: linear-gradient(90deg, transparent, #c79a4e); }
+.logo .sub::after { background: linear-gradient(90deg, #c79a4e, transparent); }
+
+/* ------------------------------------------------------------------ stage */
+.stage { position: relative; flex: 1; min-height: 0; margin: 0 7px; overflow: hidden; background: #0d0b0a; }
+.art-custom { position: absolute; inset: 0; background-size: cover; background-position: center; display: none; }
+body.has-art .art-custom { display: block; }
+body.has-art .art-scene { display: none; }
+.art-scene { position: absolute; inset: 0; background: radial-gradient(ellipse 90% 70% at 40% 25%, #2c2620 0%, #17130f 50%, #0a0807 100%); }
+.art-scene svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.shade { position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(180deg, rgba(0,0,0,.4) 0%, transparent 18%, transparent 75%, rgba(0,0,0,.6) 100%); }
+.version { position: absolute; top: 12px; right: 18px; font-size: 12.5px; color: var(--cream2); text-shadow: 0 1px 2px #000; z-index: 3; }
+
+/* notice board */
+.board { position: absolute; left: 22px; top: 26px; right: 396px; bottom: 66px; z-index: 4; display: flex; flex-direction: column;
+  background: rgba(15,11,8,.9); border: 2px solid #050302;
+  box-shadow: inset 0 0 0 1px #8a6436, inset 0 0 0 3px #2b1b0d, inset 0 0 0 4px #6b4a26, 0 18px 40px rgba(0,0,0,.65); }
+.btitle { flex: none; height: 40px; margin: 4px 4px 0; display: flex; align-items: center; padding: 0 16px;
+  background: linear-gradient(180deg, #a37b45 0%, #6c4b25 12%, #45301a 50%, #3a2611 56%, #5a3d1d 92%, #8a6334 100%);
+  box-shadow: inset 0 1px 0 #e2bf86, inset 0 -1px 0 #1a0f05, 0 2px 4px rgba(0,0,0,.6); }
+.btitle h3 { margin: 0; flex: 1; font: 700 15px/1 var(--ui); letter-spacing: .22em; text-transform: uppercase; color: #fbe3a6; text-shadow: 0 1px 0 #000, 0 0 8px rgba(0,0,0,.8); }
+.btitle span { font-size: 11.5px; color: #e7cf9f; text-shadow: 0 1px 0 #000; }
+.bbody { flex: 1; min-height: 0; margin: 0 4px 4px; padding: 12px 16px 12px; display: flex; flex-direction: column;
+  background: linear-gradient(180deg, #1b140d, #100b07); }
+.srv { display: flex; align-items: center; gap: 16px; padding: 9px 14px; background: rgba(0,0,0,.35); border: 1px solid #3f2d19; }
+.srv-main { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; }
+.lamp { width: 26px; height: 26px; flex: none; border-radius: 50%; background: radial-gradient(circle at 40% 35%, #8a8170, #3b352c 70%);
+  box-shadow: 0 0 0 2px #0a0604, 0 0 0 3px #8a6436; }
+.lamp.ok { background: radial-gradient(circle at 40% 35%, #dcffc8, #5fbf3e 55%, #2b6a17); box-shadow: 0 0 0 2px #0a0604, 0 0 0 3px #8a6436, 0 0 16px rgba(120,220,90,.6); }
+.lamp.bad { background: radial-gradient(circle at 40% 35%, #ffd0c4, #e0563c 55%, #7a1c0c); box-shadow: 0 0 0 2px #0a0604, 0 0 0 3px #8a6436, 0 0 14px rgba(230,90,60,.5); }
+.srv-state { font: 700 19px/1.15 var(--ui); letter-spacing: .03em; color: var(--cream); }
+.srv-addr { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.bsect { margin: 12px 0 6px; display: flex; align-items: center; gap: 10px; font: 700 12.5px/1 var(--ui); letter-spacing: .18em; text-transform: uppercase; color: #f2c15a; }
+.bsect::before { content: ""; width: 8px; height: 8px; transform: rotate(45deg); background: linear-gradient(135deg, #fff2a2, #c88a18); box-shadow: 0 0 0 1px #3a2208; }
+.bsect::after { content: ""; flex: 1; height: 2px; background: linear-gradient(90deg, #6b4a26, rgba(107,74,38,0)); }
+.bsect a { order: 3; font: 600 11.5px/1 var(--ui); letter-spacing: .06em; text-transform: none; color: #d6b878; cursor: pointer; }
+.bsect a:hover { color: #fff0c4; }
+.prep { display: grid; gap: 5px; }
+.prow { display: flex; align-items: center; gap: 12px; padding: 5px 10px 5px 9px; background: rgba(0,0,0,.28); border: 1px solid #33251a; }
+.prow .b.sm { padding: 6px 12px; }
+.mk { width: 24px; height: 24px; flex: none; display: grid; place-items: center; border-radius: 50%; font-weight: 800; font-size: 13px; font-style: normal;
+  color: transparent; background: #140e09; border: 1px solid #6b4d29; }
+.prow.done .mk { color: #2e1a04; background: radial-gradient(circle at 35% 30%, #fff2a2, #e3a21b); border-color: #ffe08a; }
+.prow.warn .mk { color: #2e1a04; background: radial-gradient(circle at 35% 30%, #ffd7a0, #e98a3c); border-color: #ffc98c; }
+.pt { flex: 1; min-width: 0; }
+.pt b { display: block; font-weight: 600; font-size: 14px; line-height: 1.25; color: var(--cream); }
+.pt span { display: block; font-size: 12.5px; line-height: 1.3; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.prow.done .pt span { color: #b9d9a4; } .prow.warn .pt span { color: var(--warn); }
+.latest { flex: 1; min-height: 40px; overflow: hidden; padding: 7px 10px; background: #0b0805; border: 1px solid #33251a;
+  font: 12px/1.6 "Cascadia Mono", Consolas, monospace; color: #cbbd9f; }
+
+/* right column */
+.side { position: absolute; top: 22px; right: 22px; width: 318px; bottom: 16px; z-index: 4; display: flex; flex-direction: column; align-items: center; }
+.crest { width: 226px; height: 226px; margin-top: 10px; filter: drop-shadow(0 10px 18px rgba(0,0,0,.8)); }
+.plate-l { position: relative; margin-top: -8px; width: 250px; height: 44px; display: grid; place-items: center;
+  font: 600 21px/1 var(--ui); letter-spacing: .06em; color: #fff0cf; text-shadow: 0 1px 0 #000, 0 0 8px rgba(0,0,0,.8); }
+.plate-l svg { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -1; }
+.plate-s { margin-top: 6px; font: 600 12.5px/1.3 var(--ui); letter-spacing: .06em; color: var(--cream2); text-shadow: 0 1px 2px #000; }
+.side .grow { flex: 1; min-height: 8px; }
+.btn-start { position: relative; width: 318px; height: 62px; cursor: pointer; border: 0; border-radius: 3px;
+  font: 700 24px/1 var(--ui); letter-spacing: .26em; padding-left: .26em; color: #3b1f05; text-transform: uppercase; text-shadow: 0 1px 0 rgba(255,248,210,.75);
+  background: var(--gold-btn);
+  box-shadow: 0 0 0 2px #3a2208, 0 0 0 4px #0d0804, 0 0 0 5px #6d4d27, 0 0 0 7px #120b05, 0 8px 18px rgba(0,0,0,.65),
+              inset 0 2px 0 rgba(255,255,230,.8), inset 0 -2px 0 rgba(120,60,0,.55), inset 0 0 0 3px rgba(255,236,160,.35); }
+.btn-start::before { content: ""; position: absolute; inset: 5px; border: 1px solid rgba(120,70,0,.35); border-radius: 2px; pointer-events: none; }
+.btn-start small { display: block; margin-top: 4px; font: 600 10.5px/1 var(--ui); letter-spacing: .16em; color: rgba(60,30,4,.8); text-shadow: none; }
+.btn-start:hover:not(.busy) { filter: brightness(1.08) saturate(1.1); }
+.btn-start:active:not(.busy) { transform: translateY(1px); }
+.btn-start.busy { cursor: progress; filter: saturate(.75) brightness(.92);
+  background-image: repeating-linear-gradient(-45deg, rgba(255,255,255,.2) 0 10px, transparent 10px 20px), var(--gold-btn);
+  background-size: 40px 40px, 100% 100%; animation: stripes 1s linear infinite; }
+@keyframes stripes { to { background-position: 40px 0, 0 0; } }
+.btn-orange { margin-top: 14px; width: 318px; height: 40px; cursor: pointer; border: 0; border-radius: 3px;
+  font: 700 15px/1 var(--ui); letter-spacing: .16em; color: #3b1a04; text-transform: uppercase; text-shadow: 0 1px 0 rgba(255,230,190,.6);
+  background: linear-gradient(180deg, #ffd09a 0%, #f6a65a 14%, #e98a3c 50%, #d4712a 56%, #e88f45 92%, #f8b06a 100%);
+  box-shadow: 0 0 0 2px #3a1d08, 0 0 0 4px #0d0804, 0 0 0 5px #6d4d27, 0 0 0 7px #120b05, 0 6px 14px rgba(0,0,0,.6), inset 0 2px 0 rgba(255,240,210,.7), inset 0 -2px 0 rgba(110,40,0,.5); }
+.btn-orange:hover { filter: brightness(1.08); }
+
+/* progress */
+.dl { position: absolute; left: 22px; right: 396px; bottom: 16px; z-index: 4; }
+.dl .txt { display: flex; justify-content: space-between; font-size: 12.5px; color: var(--cream); text-shadow: 0 1px 2px #000, 0 0 6px #000; margin-bottom: 5px; height: 16px; }
+.dl .track { height: 12px; background: linear-gradient(180deg, #0a0705, #1d150d); border: 1px solid #6b4d29; box-shadow: 0 0 0 1px #0a0604, inset 0 1px 3px rgba(0,0,0,.8); overflow: hidden; }
+.dl .fill { height: 100%; width: 0; background: linear-gradient(180deg, #fff1a0, #f3c232 45%, #d58e14 55%, #f0b934); box-shadow: 0 0 10px rgba(255,200,80,.6); transition: width .25s; }
+.dl.indet .fill { width: 30% !important; animation: indet 1.2s ease-in-out infinite; }
+@keyframes indet { 0% { transform: translateX(-110%); } 100% { transform: translateX(360%); } }
+
+/* ------------------------------------------------------------------ footer */
+.footer { flex: none; height: 46px; margin: 0 7px 7px; display: flex; align-items: center; gap: 18px; padding: 0 16px;
+  background: linear-gradient(180deg, #1a130c, #0c0805); border-top: 1px solid #5c4124; box-shadow: inset 0 1px 0 #0a0603; }
+.footer .mark { display: flex; align-items: center; gap: 8px; font: 700 13px/1 var(--serif); letter-spacing: .12em; color: #c9a66a; }
+.footer .mark svg { width: 20px; height: 23px; }
+.footer .vline { width: 1px; align-self: stretch; margin: 8px 0; background: #3c2b18; }
+.footer .legal { flex: 1; font-size: 10.5px; line-height: 1.45; color: #85776a; }
+.footer .legal b { color: #a99880; font-weight: 600; }
+.footer .lv { font-size: 11px; color: #85776a; display: flex; align-items: center; gap: 12px; }
+.icon-btn { width: 30px; height: 28px; cursor: pointer; border: 0; border-radius: 3px; display: grid; place-items: center; color: #3b1a04;
+  background: linear-gradient(180deg, #ffd09a, #e98a3c 50%, #d4712a 56%, #f0a055); box-shadow: 0 0 0 1px #3a1d08, 0 0 0 2px #6d4d27, inset 0 1px 0 rgba(255,240,210,.7); }
+.icon-btn:hover { filter: brightness(1.1); } .icon-btn svg { width: 17px; height: 17px; }
+
+/* ------------------------------------------------------------------ dialogs + shared controls */
+/* Flex, not grid: in a grid with an auto-sized row the dialog's max-height (100% - 70px) resolves to
+   nothing, so tall dialogs (Controls, Game Files) ran off the bottom of the window and could not scroll. */
+.back { position: fixed; inset: 0; z-index: 60; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,.62); }
+.back.show { display: flex; animation: fade .15s ease; }
+@keyframes fade { from { opacity: 0; } }
+.win { position: relative; width: 700px; max-height: calc(100% - 70px); display: flex; flex-direction: column; background: #15100b; border: 2px solid #050302;
+  box-shadow: inset 0 0 0 1px #8a6436, inset 0 0 0 3px #2b1b0d, inset 0 0 0 4px #6b4a26, 0 30px 70px rgba(0,0,0,.8); }
+.win.small { width: 460px; }
+.wtitle { position: relative; flex: none; height: 44px; margin: 4px 4px 0; display: flex; align-items: center; padding: 0 12px 0 18px;
+  background: linear-gradient(180deg, #a37b45 0%, #6c4b25 12%, #45301a 50%, #3a2611 56%, #5a3d1d 92%, #8a6334 100%); box-shadow: inset 0 1px 0 #e2bf86, inset 0 -1px 0 #1a0f05, 0 2px 4px rgba(0,0,0,.6); }
+.wtitle h3 { margin: 0; flex: 1; font: 700 16px/1 var(--ui); letter-spacing: .2em; text-transform: uppercase; color: #fbe3a6; text-shadow: 0 1px 0 #000, 0 0 8px rgba(0,0,0,.8); }
+.wbody { flex: 1; min-height: 0; overflow-y: auto; padding: 16px 22px 20px; margin: 0 4px 4px; background: linear-gradient(180deg, #1c150e, #120d08); }
+.wbody::-webkit-scrollbar { width: 10px; } .wbody::-webkit-scrollbar-track { background: #0d0905; }
+.wbody::-webkit-scrollbar-thumb { background: linear-gradient(90deg, #6b4a26, #a37b45, #6b4a26); border-radius: 2px; }
+.wfoot { padding: 12px 18px; display: flex; justify-content: flex-end; gap: 10px; margin: 0 4px 4px; background: #100b07; border-top: 1px solid #3c2b18; }
+.sect { margin: 16px 0 8px; display: flex; align-items: center; gap: 10px; font: 700 13px/1 var(--ui); letter-spacing: .18em; text-transform: uppercase; color: #f2c15a; }
+.sect:first-child { margin-top: 0; }
+.sect::before { content: ""; width: 9px; height: 9px; transform: rotate(45deg); background: linear-gradient(135deg, #fff2a2, #c88a18); box-shadow: 0 0 0 1px #3a2208; }
+.sect::after { content: ""; flex: 1; height: 2px; background: linear-gradient(90deg, #6b4a26, rgba(107,74,38,0)); }
+.box { padding: 12px 14px; margin-bottom: 10px; background: rgba(0,0,0,.32); border: 1px solid #3f2d19; }
+.box .t { font-weight: 600; font-size: 14.5px; color: var(--cream); }
+.box .d { color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+.box .v { margin-top: 8px; font-size: 13.5px; color: var(--cream2); }
+.good { color: var(--ok) !important; } .warnc { color: var(--warn) !important; } .badc { color: var(--bad) !important; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; align-items: center; }
+.b { cursor: pointer; padding: 8px 14px; border: 0; border-radius: 2px; font: 600 13px/1 var(--ui); letter-spacing: .08em; text-transform: uppercase; color: var(--cream); text-shadow: 0 1px 0 #000;
+  background: var(--bronze-btn); box-shadow: 0 0 0 1px #0d0804, 0 0 0 2px #6d4d27, inset 0 1px 0 rgba(255,220,160,.35), 0 3px 6px rgba(0,0,0,.5); white-space: nowrap; }
+.b:hover:not([disabled]) { filter: brightness(1.18); }
+.b.gold { color: #3b1f05; text-shadow: 0 1px 0 rgba(255,248,210,.7); background: var(--gold-btn);
+  box-shadow: 0 0 0 1px #3a2208, 0 0 0 2px #8a6436, inset 0 1px 0 rgba(255,255,230,.8), 0 3px 6px rgba(0,0,0,.5); }
+.b.sm { padding: 7px 12px; font-size: 12px; min-width: 84px; }
+.b[disabled] { opacity: .45; cursor: default; }
+.hint { color: var(--dim); font-size: 12px; margin-top: 8px; line-height: 1.5; }
+.hint b { color: var(--cream2); font-weight: 600; }
+.keyrow { display: flex; gap: 8px; margin-top: 10px; }
+.keyrow input { flex: 1; padding: 8px 10px; background: #0c0805; border: 1px solid #5a4024; color: var(--cream); font: 13px/1 "Cascadia Mono", Consolas, monospace; letter-spacing: .06em; outline: none; user-select: text; }
+.keyrow input:focus { border-color: #c19a62; }
+.opt { display: grid; grid-template-columns: 160px 1fr; gap: 5px 16px; align-items: start; padding: 10px 0; border-bottom: 1px solid #2c2014; }
+.opt:last-child { border-bottom: 0; }
+.opt .l { padding-top: 6px; font-weight: 600; font-size: 14px; color: var(--cream); }
+.opt .l small { display: block; color: var(--dim); font-weight: 400; font-size: 11.5px; }
+.opt .n { grid-column: 2; font-size: 12px; color: var(--muted); }
+.opt .n.warn { color: var(--warn); }
+.seg { display: flex; flex-wrap: wrap; gap: 6px; }
+.seg button { cursor: pointer; padding: 7px 12px 6px; border: 0; border-radius: 2px; font: 600 13px/1.1 var(--ui); letter-spacing: .04em; color: var(--cream2);
+  background: linear-gradient(180deg, #3a2a1a, #21170d); box-shadow: 0 0 0 1px #0a0604, 0 0 0 2px #4d3720, inset 0 1px 0 rgba(255,220,160,.12); }
+.seg button:hover { color: var(--cream); box-shadow: 0 0 0 1px #0a0604, 0 0 0 2px #8a6436, inset 0 1px 0 rgba(255,220,160,.2); }
+.seg button.on { color: #3b1f05; text-shadow: 0 1px 0 rgba(255,248,210,.6); background: var(--gold-btn); box-shadow: 0 0 0 1px #3a2208, 0 0 0 2px #c79a4e, inset 0 1px 0 rgba(255,255,230,.8); }
+.seg button .tag { display: block; margin-top: 2px; font-size: 9.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; opacity: .7; }
+.tg { display: flex; align-items: center; gap: 12px; cursor: pointer; padding: 4px 0; }
+.tg input { display: none; }
+.tg .box2 { flex: none; width: 20px; height: 20px; display: grid; place-items: center; background: #0d0905; border: 1px solid #6b4d29; box-shadow: inset 0 1px 3px rgba(0,0,0,.8); color: transparent; font-weight: 800; font-size: 13px; }
+.tg input:checked + .box2 { color: #3b1f05; background: linear-gradient(180deg, #fff2a2, #e3a21b); border-color: #ffe08a; }
+.tg .txt { font-size: 13.5px; color: var(--cream); } .tg .txt small { display: block; color: var(--dim); font-size: 11.5px; }
+.devices { display: grid; gap: 7px; }
+.device { display: flex; align-items: center; gap: 12px; width: 100%; padding: 10px 12px; cursor: pointer; text-align: left; border: 0; color: var(--cream);
+  background: linear-gradient(180deg, #2c2015, #1a120b); box-shadow: 0 0 0 1px #0a0604, 0 0 0 2px #4d3720; border-radius: 2px; }
+.device:hover { box-shadow: 0 0 0 1px #0a0604, 0 0 0 2px #8a6436; }
+.device.on { background: linear-gradient(180deg, #4a3416, #2a1c0c); box-shadow: 0 0 0 1px #0a0604, 0 0 0 2px #f0c050, 0 0 14px rgba(240,190,80,.25); }
+.device svg { width: 36px; height: 24px; flex: none; color: #e3b860; }
+.device .n { font-weight: 600; font-size: 14px; } .device .k { color: var(--muted); font-size: 11.5px; }
+.device .tick { margin-left: auto; width: 20px; height: 20px; display: grid; place-items: center; font-weight: 800; font-size: 12px; color: #3b1f05; background: linear-gradient(180deg, #fff2a2, #e3a21b); opacity: 0; }
+.device.on .tick { opacity: 1; }
+.empty { padding: 14px; text-align: center; color: var(--muted); font-size: 13px; border: 1px dashed #4d3720; }
+.sticks { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.stick { padding: 12px; background: rgba(0,0,0,.32); border: 1px solid #3f2d19; }
+.stick .top { display: flex; justify-content: space-between; align-items: baseline; }
+.stick .name { font-weight: 700; letter-spacing: .12em; text-transform: uppercase; font-size: 13px; color: #f2c15a; }
+.stick .what { font-size: 11.5px; color: var(--dim); }
+.stick .inner { display: flex; gap: 14px; align-items: center; margin-top: 8px; }
+.viz { width: 104px; height: 104px; flex: none; }
+.viz .rim { fill: #0b0805; stroke: #8a6436; stroke-width: 3; } .viz .rim2 { fill: none; stroke: #2b1b0d; stroke-width: 1.5; }
+.viz .full { fill: none; stroke: rgba(255,226,150,.55); stroke-width: 1; stroke-dasharray: 3 3; }
+.viz .dz { fill: rgba(239,106,82,.2); stroke: rgba(239,106,82,.7); stroke-width: 1; }
+.viz .cross { stroke: rgba(160,120,60,.22); stroke-width: 1; }
+.viz .raw { fill: #9a8a6c; } .viz .out { fill: #ffcf4a; filter: drop-shadow(0 0 4px rgba(255,190,60,.9)); }
+.sliders { flex: 1; display: grid; gap: 9px; }
+.sl { display: flex; justify-content: space-between; font-size: 12.5px; color: var(--cream2); margin-bottom: 4px; } .sl b { color: #f8d34e; }
+input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 8px; cursor: pointer; outline: none; border: 1px solid #6b4d29;
+  background: linear-gradient(90deg, #d58e14, #f8d34e var(--p, 50%), #0d0905 var(--p, 50%)); box-shadow: 0 0 0 1px #0a0604; }
+input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; transform: rotate(45deg); background: linear-gradient(135deg, #fff2a2, #c88a18); border: 1px solid #3a2208; box-shadow: 0 0 6px rgba(255,200,80,.6); }
+.readout { margin-top: 7px; font-size: 12px; color: var(--muted); } .readout b { color: #ffcf4a; }
+.pressed { min-height: 42px; display: flex; flex-wrap: wrap; gap: 7px; align-items: center; padding: 9px 12px; background: rgba(0,0,0,.32); border: 1px solid #3f2d19; color: var(--muted); font-size: 13px; }
+.chip { padding: 4px 10px; font-size: 12.5px; color: var(--cream); background: linear-gradient(180deg, #3a2a1a, #21170d); box-shadow: 0 0 0 1px #0a0604, 0 0 0 2px #8a6436; animation: pop .2s ease; }
+.chip b { color: #f8d34e; } @keyframes pop { from { transform: scale(.85); opacity: .3; } }
+.log { height: 340px; overflow-y: auto; padding: 10px 12px; background: #0b0805; border: 1px solid #3f2d19; font: 12px/1.6 "Cascadia Mono", Consolas, monospace; color: #cbbd9f; user-select: text; }
+.log .t, .latest .t { color: #6f6350; margin-right: 8px; }
+.help ol { margin: 6px 0 0 18px; padding: 0; color: var(--cream2); } .help li { margin: 5px 0; } .help p { color: var(--cream2); margin: 6px 0; }
+.msg { color: var(--cream2); white-space: pre-line; line-height: 1.55; font-size: 14px; }
+</style>
+<script>
+/* The layout is drawn for a 1100 x 680 page. With Windows display scaling (125%, 150%, ...) WebView2
+   hands the window a smaller, differently shaped page (e.g. 988 x 584 at 125%), and the panels then
+   overlap. Scale the whole UI so it always gets at least 1100 x 680 layout pixels; any spare width or
+   height goes to the notice board. */
+(function () {
+  const W = 1100, H = 680;
+  function fit() {
+    const z = Math.min(window.innerWidth / W, window.innerHeight / H);
+    document.documentElement.style.zoom = z > 0 && isFinite(z) ? z.toFixed(4) : "1";
+  }
+  fit();
+  window.addEventListener("resize", fit);
+})();
+</script>
+</head>
+<body class="">
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="gGold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6c8"/><stop offset=".3" stop-color="#f2cf6a"/><stop offset=".62" stop-color="#b9832c"/><stop offset="1" stop-color="#6e4612"/></linearGradient>
+    <linearGradient id="gGoldD" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffefb0"/><stop offset=".45" stop-color="#d9a64a"/><stop offset="1" stop-color="#6a420f"/></linearGradient>
+    <linearGradient id="gIron" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3b332c"/><stop offset=".55" stop-color="#1a1512"/><stop offset="1" stop-color="#0c0a08"/></linearGradient>
+    <radialGradient id="gDisc" cx=".5" cy=".42" r=".6"><stop offset="0" stop-color="#3d342c"/><stop offset=".7" stop-color="#17120e"/><stop offset="1" stop-color="#0a0806"/></radialGradient>
+    <linearGradient id="gEmber" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe7a8"/><stop offset=".4" stop-color="#ff9b3d"/><stop offset="1" stop-color="#c4270f"/></linearGradient>
+    <filter id="fGlow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2.2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <symbol id="emblem" viewBox="0 0 120 140">
+      <path d="M60 3 L112 17 L112 61 C112 99 89 123 60 137 C31 123 8 99 8 61 L8 17 Z" fill="url(#gGold)"/>
+      <path d="M60 11 L104 23 L104 61 C104 94 85 115 60 128 C35 115 16 94 16 61 L16 23 Z" fill="url(#gIron)"/>
+      <g filter="url(#fGlow)" fill="url(#gEmber)"><path d="M33 30 C43 50 49 74 45 108 C43 82 35 58 26 37 Z"/><path d="M57 26 C67 50 72 78 66 116 C64 86 57 59 49 33 Z"/><path d="M81 30 C89 49 92 72 85 102 C85 78 79 56 72 37 Z"/></g>
+    </symbol>
+    <symbol id="pad" viewBox="0 0 48 32">
+      <path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" d="M14 4 H34 C40 4 43 8 45 15 L46.5 23 C47.3 27.5 44.5 30 41.5 29 C39 28.2 37 25 35 22 H13 C11 25 9 28.2 6.5 29 C3.5 30 .7 27.5 1.5 23 L3 15 C5 8 8 4 14 4 Z"/>
+      <path stroke="currentColor" stroke-width="2.2" stroke-linecap="round" d="M11 13 V19 M8 16 H14"/>
+      <circle cx="35" cy="12.5" r="1.9" fill="currentColor"/><circle cx="35" cy="19.5" r="1.9" fill="currentColor"/><circle cx="31.5" cy="16" r="1.9" fill="currentColor"/><circle cx="38.5" cy="16" r="1.9" fill="currentColor"/>
+    </symbol>
+  </defs>
+</svg>
+
+<div class="frame">
+  <header class="topbar grunge">
+    <div class="drag pywebview-drag-region"></div>
+    <div class="cap"><svg><use href="#emblem"/></svg></div>
+    <div class="band">
+      <nav class="nav">
+        <div class="half">
+          <button class="navbtn" data-open="files">Game Files</button><span class="sep"></span>
+          <button class="navbtn" data-open="graphics">Graphics</button><span class="sep"></span>
+          <button class="navbtn" data-open="controls">Controls</button>
+        </div>
+        <div class="gap pywebview-drag-region"></div>
+        <div class="half">
+          <button class="navbtn" data-open="log">Hunter Log</button><span class="sep"></span>
+          <button class="navbtn" data-open="help">Guide</button><span class="sep"></span>
+          <button class="navbtn" id="navTest">Server</button>
+        </div>
+      </nav>
+    </div>
+    <div class="winbtns">
+      <button class="winbtn" id="btnMin" title="Minimize"><svg viewBox="0 0 12 12"><path d="M2 7h8" stroke="currentColor" stroke-width="2"/></svg></button>
+      <button class="winbtn close" id="btnClose" title="Close"><svg viewBox="0 0 12 12"><path d="M2 2l8 8M10 2l-8 8" stroke="currentColor" stroke-width="2"/></svg></button>
+    </div>
+    <div class="logo">
+      <svg viewBox="0 0 280 80" aria-hidden="true">
+        <path d="M14 2 H266 L278 14 V62 L264 78 H16 L2 62 V14 Z" fill="url(#gIron)" stroke="#0a0604" stroke-width="2"/>
+        <path d="M16 7 H264 L273 16 V60 L262 73 H18 L7 60 V16 Z" fill="none" stroke="url(#gGold)" stroke-width="2"/>
+        <path d="M20 11 H260 L268 18 V58 L259 69 H21 L12 58 V18 Z" fill="none" stroke="rgba(255,220,150,.16)" stroke-width="1"/>
+        <g fill="url(#gGoldD)" stroke="#2a1806" stroke-width=".8"><circle cx="22" cy="20" r="2.8"/><circle cx="258" cy="20" r="2.8"/><circle cx="22" cy="60" r="2.8"/><circle cx="258" cy="60" r="2.8"/></g>
+      </svg>
+      <div class="words"><div class="mh">MH3U</div><div class="sub">ONLINE</div></div>
+    </div>
+  </header>
+
+  <section class="stage">
+    <div class="art-custom"></div>
+    <div class="art-scene">
+      <svg viewBox="0 0 1086 564" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+        <defs>
+          <filter id="clouds" x="0" y="0" width="100%" height="100%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.0028 0.008" numOctaves="5" seed="11" result="n"/>
+            <feColorMatrix in="n" type="matrix" values="0 0 0 0 .55  0 0 0 0 .45  0 0 0 0 .34  1.6 0 0 0 -.6"/>
+          </filter>
+          <linearGradient id="r1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#211a14"/><stop offset="1" stop-color="#120e0b"/></linearGradient>
+          <linearGradient id="r2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#130f0c"/><stop offset="1" stop-color="#080605"/></linearGradient>
+          <radialGradient id="glow" cx=".45" cy=".7" r=".6"><stop offset="0" stop-color="rgba(255,170,90,.16)"/><stop offset="1" stop-color="rgba(255,170,90,0)"/></radialGradient>
+        </defs>
+        <rect width="1086" height="564" filter="url(#clouds)" opacity=".42"/>
+        <rect width="1086" height="564" fill="url(#glow)"/>
+        <path fill="url(#r1)" d="M0 420 L70 392 L130 404 L200 360 L262 388 L330 362 L400 396 L470 372 L540 400 L610 366 L690 398 L760 370 L840 402 L910 376 L990 404 L1086 380 L1086 564 L0 564 Z"/>
+        <path fill="url(#r2)" d="M0 486 L90 462 L190 478 L300 452 L420 480 L540 460 L660 484 L780 458 L900 482 L1010 462 L1086 474 L1086 564 L0 564 Z"/>
+      </svg>
+    </div>
+    <div class="shade"></div>
+    <div class="version" id="version">Client version: -</div>
+
+    <div class="board">
+      <div class="btitle grunge"><h3>Notice Board</h3><span id="bChecked"></span></div>
+      <div class="bbody">
+        <div class="srv">
+          <div class="srv-main"><div class="lamp" id="lamp"></div>
+            <div><div class="srv-state" id="srvState">Contacting the server...</div><div class="srv-addr" id="srvAddr"></div></div></div>
+          <button class="b sm" id="srvTest">Test connection</button>
+        </div>
+        <div class="bsect">Preparation</div>
+        <div class="prep">
+          <div class="prow" id="pClient"><i class="mk">&#10003;</i><div class="pt"><b>Game client</b><span></span></div><button class="b sm"></button></div>
+          <div class="prow" id="pGame"><i class="mk">&#10003;</i><div class="pt"><b>Your copy of MH3U</b><span></span></div><button class="b sm"></button></div>
+          <div class="prow" id="pUpd"><i class="mk">&#10003;</i><div class="pt"><b>Game update</b><span></span></div><button class="b sm"></button></div>
+          <div class="prow" id="pPad"><i class="mk">&#10003;</i><div class="pt"><b>Controller</b><span></span></div><button class="b sm"></button></div>
+        </div>
+        <div class="bsect">Hunter log<a id="logAll">View all</a></div>
+        <div class="latest" id="latest"></div>
+      </div>
+    </div>
+
+    <div class="side">
+      <svg class="crest" viewBox="0 0 240 240" aria-hidden="true">
+        <g transform="translate(120 120)">
+          <circle r="104" fill="url(#gDisc)" stroke="#0a0604" stroke-width="3"/>
+          <circle r="100" fill="none" stroke="url(#gGold)" stroke-width="3"/>
+          <circle r="93" fill="none" stroke="rgba(0,0,0,.7)" stroke-width="2"/>
+          <circle r="88" fill="none" stroke="rgba(255,214,140,.22)" stroke-width="1" stroke-dasharray="2 5"/>
+          <g fill="url(#gGoldD)" stroke="#2a1806" stroke-width="1.2">
+            <rect x="-11" y="-114" width="22" height="22" transform="rotate(45)"/><rect x="-11" y="-114" width="22" height="22" transform="rotate(135)"/>
+            <rect x="-11" y="-114" width="22" height="22" transform="rotate(225)"/><rect x="-11" y="-114" width="22" height="22" transform="rotate(315)"/>
+          </g>
+          <path d="M0 -92 L92 0 L0 92 L-92 0 Z" fill="#160f09" stroke="#0a0604" stroke-width="3"/>
+          <path d="M0 -86 L86 0 L0 86 L-86 0 Z" fill="none" stroke="url(#gGold)" stroke-width="7"/>
+          <path d="M0 -70 L70 0 L0 70 L-70 0 Z" fill="none" stroke="url(#gGold)" stroke-width="2.5"/>
+          <path d="M0 -62 L62 0 L0 62 L-62 0 Z" fill="rgba(0,0,0,.35)"/>
+          <g stroke="#2a1806" stroke-width="1.2" fill="url(#gGoldD)">
+            <path d="M-56 -50 L-48 -58 L46 36 L52 54 L34 48 Z"/><path d="M56 -50 L48 -58 L-46 36 L-52 54 L-34 48 Z"/>
+            <path d="M-60 -60 L-50 -48 L-42 -56 Z"/><path d="M60 -60 L50 -48 L42 -56 Z"/>
+          </g>
+          <use href="#emblem" x="-22" y="-26" width="44" height="52"/>
+          <g fill="url(#gGoldD)" stroke="#2a1806" stroke-width="1"><circle cx="0" cy="-78" r="4"/><circle cx="78" cy="0" r="4"/><circle cx="0" cy="78" r="4"/><circle cx="-78" cy="0" r="4"/></g>
+        </g>
+      </svg>
+      <div class="plate-l">
+        <svg viewBox="0 0 250 44" preserveAspectRatio="none"><path d="M12 1 H238 L249 22 L238 43 H12 L1 22 Z" fill="#20160d" stroke="#0a0604" stroke-width="2"/><path d="M14 5 H236 L244 22 L236 39 H14 L6 22 Z" fill="url(#gIron)" stroke="#9a7442" stroke-width="1.5"/></svg>
+        <span id="serverName">MH3U Online</span>
+      </div>
+      <div class="plate-s" id="plateS"></div>
+      <div class="grow"></div>
+      <button class="btn-start" id="btnStart">Start Game<small>Depart for the gathering hall</small></button>
+      <button class="btn-orange" id="btnSettings">Game Settings</button>
+    </div>
+
+    <div class="dl" id="dl"><div class="txt"><span id="dlText">Ready.</span><span id="dlPct"></span></div><div class="track"><div class="fill" id="dlFill"></div></div></div>
+  </section>
+
+  <footer class="footer">
+    <div class="mark"><svg><use href="#emblem"/></svg>MH3U REVIVAL</div>
+    <div class="vline"></div>
+    <div class="legal">Fan-made launcher for a community <b>Monster Hunter 3 Ultimate</b> server, built on MH3U Revival (AGPL-3.0) and Cemu (MPL-2.0).<br>
+      Not affiliated with or endorsed by Capcom or Nintendo. Bring your own copy of the game - no game files are included.</div>
+    <div class="lv"><span id="lv"></span><button class="icon-btn" id="btnFolder" title="Open game folder"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M3 6.5C3 5.7 3.7 5 4.5 5h5l2 2h8c.8 0 1.5.7 1.5 1.5V18c0 .8-.7 1.5-1.5 1.5h-15C3.7 19.5 3 18.8 3 18z"/></svg></button></div>
+  </footer>
+</div>
+
+<div class="back" id="back">
+  <div class="win" id="win">
+    <div class="wtitle grunge"><h3 id="wTitle"></h3><button class="winbtn close" id="wClose" title="Close"><svg viewBox="0 0 12 12"><path d="M2 2l8 8M10 2l-8 8" stroke="currentColor" stroke-width="2"/></svg></button></div>
+    <div class="wbody" id="wBody"></div>
+    <div class="wfoot" id="wFoot" style="display:none"></div>
+  </div>
+</div>
+
+<template id="tpl-files">
+  <div class="sect">Game client</div>
+  <div class="box"><div class="t">Patched Cemu for MH3U Revival</div><div class="d">Runs the game and connects it to the server. Installed and kept up to date for you.</div>
+    <div class="v" id="fClient"></div><div class="row"><button class="b gold" id="fInstall">Install</button></div></div>
+  <div class="sect">Your copy of MH3U</div>
+  <div class="box"><div class="t" id="fGame">No game chosen yet</div><div class="d">US, EU and JP all work. Your files stay on your PC; nothing is uploaded.</div>
+    <div class="row"><button class="b gold" id="fFolder">Choose game folder</button><button class="b" id="fFile">Choose .wua / .wux / .wud / .iso</button></div>
+    <div class="hint">A <b>folder</b> dump has <b>code</b>, <b>content</b> and <b>meta</b> inside, e.g. <b>MONSTER HUNTER 3 ULTIMATE [Game] [0005000010117200]</b>. Choose it, or the folder above it.</div></div>
+  <div class="sect">Game update</div>
+  <div class="box"><div class="t" id="fUpd">No update found</div><div class="d">Used automatically. Easiest: put the <b>[Update]</b> folder in the <b>updates</b> folder next to MH3U_Play.exe. The launcher checks it every time it starts and before every game, and always uses the newest update there. It also finds updates next to your game, in Downloads, Desktop or Documents, and in game folders on your drives. US and EU use v32, JP uses v96.</div>
+    <div class="row"><button class="b gold" id="fOpenUpd">Open updates folder</button><button class="b" id="fAddUpd">Add update folder</button></div>
+    <div class="hint">Don't have it? On your Wii U, start MH3U once while online so the console downloads the update. Then dump it with <b>Dumpling</b>, the same homebrew app used to dump the game: choose its <b>Dump game update</b> option. Copy the <b>[Update]</b> folder into the <b>updates</b> folder.</div></div>
+  <div class="sect">Sound effects</div>
+  <div class="box"><div class="t" id="fSnd">Wii U sound files missing</div><div class="d">Footsteps, ambience and other effects go through the Wii U's own reverb. The game client only has a stand-in for it, which made them sound hollow, as if through a tube. The launcher fixes the stand-in, so they sound clean, just without reverb. For the real reverb, add two files from your own Wii U: <b>snd_user.rpl</b> and <b>snduser2.rpl</b>. Put them in the <b>updates</b> folder and the launcher installs them.</div>
+    <div class="hint">Copy them from your Wii U with the FTPiiU plugin and an FTP program: they're in <b>storage_slc/sys/title/00050010/1000400a/code</b>. Only copy, never delete or rename anything there: that would brick the console.</div></div>
+  <div class="box" id="fKeyBox" style="display:none"><div class="t">Disc key</div><div class="d">Disc images (.wud / .wux / .iso) need the disc key that was dumped with them. The launcher reads it from game.key next to the image, or from a <b>keys.txt</b> next to MH3U_Play.exe, at every start. Otherwise paste it here.</div>
+    <div class="keyrow"><input id="fKey" maxlength="40" placeholder="32 characters, 0-9 and a-f" spellcheck="false"><button class="b gold" id="fKeySave">Save key</button></div></div>
+</template>
+
+<template id="tpl-graphics">
+  <div class="opt"><div class="l">Resolution<small>Rendering quality</small></div><div class="seg" id="gRes"></div><div class="n" id="gResN"></div></div>
+  <div class="opt"><div class="l">Frame rate<small>Game speed stays correct</small></div><div class="seg" id="gFps"></div><div class="n" id="gFpsN"></div></div>
+  <div class="opt"><div class="l">Shadows</div><div class="seg" id="gSh"></div></div>
+  <div class="opt"><div class="l">Texture filtering</div><div class="seg" id="gAn"></div></div>
+  <div class="opt"><div class="l">Display</div><div class="seg" id="gDisp"></div></div>
+  <div class="opt"><div class="l">Graphics API</div><div class="seg" id="gApi"></div><div class="n">Use OpenGL only if Vulkan gives you trouble.</div></div>
+  <div class="opt"><div class="l">Sound</div><div class="seg" id="gSnd"></div><div class="n">Surround 5.1 only for a 5.1 or 7.1 speaker setup.</div></div>
+  <div class="opt"><div class="l">Audio API</div><div class="seg" id="gAud"></div><div class="n">Try Cubeb only if XAudio2 gives you no sound or crackles.</div></div>
+  <div class="opt"><div class="l">Options</div><div>
+    <label class="tg"><input type="checkbox" id="gPad"><span class="box2">&#10003;</span><span class="txt">GamePad screen in its own window<small>MH3U's map and item menus live there. Click it with your mouse to touch.</small></span></label>
+    <label class="tg"><input type="checkbox" id="gVs"><span class="box2">&#10003;</span><span class="txt">VSync<small>No tearing; caps the frame rate at your screen's refresh rate.</small></span></label>
+    <label class="tg"><input type="checkbox" id="gFc"><span class="box2">&#10003;</span><span class="txt">FPS counter</span></label>
+  </div></div>
+  <div class="hint">Changes apply the next time you press Start Game.</div>
+</template>
+
+<template id="tpl-controls">
+  <div class="seg" id="cMode" style="margin-bottom:12px"></div>
+  <div id="cAuto">
+    <div class="sect">Controller</div>
+    <div class="devices" id="cDevs"><div class="empty">Looking for controllers...</div></div>
+    <div class="opt"><div class="l">Confirm button</div><div class="seg" id="cConf"></div></div>
+    <div class="opt"><div class="l">Vibration</div><div><label class="tg"><input type="checkbox" id="cRum"><span class="box2">&#10003;</span><span class="txt">On</span></label></div></div>
+    <div class="sect">Sticks</div>
+    <div class="sticks">
+      <div class="stick" data-side="left"><div class="top"><span class="name">Left stick</span><span class="what">movement</span></div>
+        <div class="inner"><svg class="viz" viewBox="-60 -60 120 120"><circle class="rim" r="56"/><circle class="rim2" r="52"/><line class="cross" x1="-52" x2="52"/><line class="cross" y1="-52" y2="52"/><circle class="full" r="40"/><circle class="dz" r="4"/><circle class="raw" r="4"/><circle class="out" r="6"/></svg>
+          <div class="sliders"><div><div class="sl"><span>Deadzone</span><b class="vdz"></b></div><input type="range" class="dz-in" min="0" max="40" step="1"></div>
+            <div><div class="sl"><span>Sensitivity</span><b class="vrg"></b></div><input type="range" class="rg-in" min="100" max="200" step="5"></div></div></div>
+        <div class="readout">Stick <b class="r1">0%</b> &rarr; game gets <b class="r2">0%</b></div></div>
+      <div class="stick" data-side="right"><div class="top"><span class="name">Right stick</span><span class="what">camera</span></div>
+        <div class="inner"><svg class="viz" viewBox="-60 -60 120 120"><circle class="rim" r="56"/><circle class="rim2" r="52"/><line class="cross" x1="-52" x2="52"/><line class="cross" y1="-52" y2="52"/><circle class="full" r="40"/><circle class="dz" r="4"/><circle class="raw" r="4"/><circle class="out" r="6"/></svg>
+          <div class="sliders"><div><div class="sl"><span>Deadzone</span><b class="vdz"></b></div><input type="range" class="dz-in" min="0" max="40" step="1"></div>
+            <div><div class="sl"><span>Sensitivity</span><b class="vrg"></b></div><input type="range" class="rg-in" min="100" max="200" step="5"></div></div></div>
+        <div class="readout">Stick <b class="r1">0%</b> &rarr; game gets <b class="r2">0%</b></div></div>
+    </div>
+    <div class="hint"><b>Deadzone</b>: how far you push before anything happens (lower = more responsive). <b>Sensitivity</b> boosts small movements so MH3U's own large deadzone is crossed sooner; the dashed ring is where you reach full tilt.</div>
+    <div class="sect">Button test</div>
+    <div class="pressed" id="cPressed">Press any button on your controller.</div>
+  </div>
+  <div id="cKeep" style="display:none"><div class="box"><div class="t">Your own Cemu setup is kept</div><div class="d">The launcher won't touch your controller profile. Change it in Cemu: Options &gt; Input settings.</div></div></div>
+  <div class="row"><button class="b" id="cCemu">Open Cemu's own controller settings</button></div>
+  <div class="hint">Every Xbox controller (360, One, Series, Elite) and PlayStation controller (DualShock 4, DualSense, DualSense Edge) works over USB or Bluetooth. DualShock 3 needs the DsHidMini driver. For keyboard, use Cemu's own settings.</div>
+</template>
+
+<template id="tpl-log"><div class="log" id="logBox"></div></template>
+
+<template id="tpl-help"><div class="help">
+  <div class="sect">Getting started</div>
+  <ol><li><b>Game Files</b>: install the game client (one click) and choose your own MH3U dump.</li>
+    <li><b>Controls</b>: plug in your Xbox or PlayStation controller; it is set up automatically.</li>
+    <li>Press <b>Start Game</b>. In MH3U, go online from the gathering hall menu.</li></ol>
+  <div class="sect">Good to know</div>
+  <p>The first time the game starts, Windows may ask whether Cemu may use the network. Click <b>Allow</b>.</p>
+  <p>The Wii U GamePad screen (map, items, chat) opens in its own window. Click it with your mouse to touch it. On PlayStation controllers, the touchpad swaps the screens.</p>
+  <p>Windows SmartScreen may warn about this launcher because it isn't code-signed: choose <b>More info &gt; Run anyway</b>.</p>
+  <p>Your saves are in the game folder (folder button, bottom right): <b>portable\mlc01\usr\save</b>.</p>
+</div></template>
+
+<script>
+"use strict";
+const $ = (s, el = document) => el.querySelector(s);
+const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+const RES = [["1280x720 (HD)", "720p", "faster"], ["1600x900", "900p", ""], ["1920x1080 (Full HD, Default)", "1080p", "original"], ["2560x1440 (2K)", "1440p", ""], ["3200x1800", "1800p", ""], ["3840x2160 (4K)", "4K", ""]];
+const FPS = [["30 FPS (vanilla-correct)", "30 FPS", "original"], ["45 FPS (middle ground)", "45 FPS", ""], ["60 FPS (normalized beta)", "60 FPS", "default"], ["120 FPS (experimental)", "120 FPS", "experimental"]];
+const SHADOWS = [["Low (50%)", "Low", ""], ["Medium (100%, Default)", "Medium", "original"], ["High (200%)", "High", ""], ["Ultra (300%)", "Ultra", ""]];
+const ANISO = [["1x (Default)", "Off", "original"], ["2x", "2x", ""], ["4x", "4x", ""], ["8x", "8x", ""], ["16x", "16x", ""]];
+const PHYS = {
+  xbox: {0: "D-pad up", 1: "D-pad down", 2: "D-pad left", 3: "D-pad right", 4: "Menu", 5: "View", 6: "Left stick click", 7: "Right stick click", 8: "LB", 9: "RB", 12: "A", 13: "B", 14: "X", 15: "Y", 42: "LT", 43: "RT"},
+  playstation: {0: "Cross", 1: "Circle", 2: "Square", 3: "Triangle", 4: "Create / Share", 5: "PS button", 6: "Options", 7: "L3", 8: "R3", 9: "L1", 10: "R1", 11: "D-pad up", 12: "D-pad down", 13: "D-pad left", 14: "D-pad right", 15: "Mute", 20: "Touchpad", 42: "L2", 43: "R2"},
+  other: {0: "Bottom button", 1: "Right button", 2: "Left button", 3: "Top button", 4: "Back", 5: "Home", 6: "Start", 7: "Left stick click", 8: "Right stick click", 9: "Left bumper", 10: "Right bumper", 11: "D-pad up", 12: "D-pad down", 13: "D-pad left", 14: "D-pad right", 42: "Left trigger", 43: "Right trigger"},
+};
+const TITLES = {files: "Game Files", graphics: "Graphics", controls: "Controls", log: "Hunter Log", help: "Guide"};
+
+const MH = {
+  api: null, s: null, log: [], busy: false, open: null, sticks: {left: [0, 0], right: [0, 0]},
+  async start(api) {
+    if (this.api) return;
+    this.api = api;
+    this.s = await api.get_state();
+    this.log = this.s.log || [];
+    this.bind(); this.render();
+  },
+  call(name, ...args) { return this.api[name](...args).catch(e => { this.ask("Error", String(e)); return null; }); },
+
+  event(e) {
+    switch (e.type) {
+      case "state": Object.assign(this.s, e.state); this.render(); break;
+      case "log": this.log.push({time: e.time, text: e.text}); if (this.log.length > 200) this.log.shift(); this.renderLog(); break;
+      case "progress": this.progress(e.frac, e.text); break;
+      case "status": this.s.server = e.server; this.renderServer(); break;
+      case "done":
+        this.busy = false; if (e.state) Object.assign(this.s, e.state); this.render();
+        if (e.error) { this.progress(0, "Stopped."); this.ask("Hold on, hunter", e.error); }
+        else this.progress(1, e.message || "Done.");
+        break;
+      case "devices": this.s.devices = e.devices; if (e.controls) this.s.controls = e.controls; if (this.open === "controls") this.renderDevices(); this.renderBoard(); break;
+      case "pressed": this.showPressed(e.codes); break;
+      case "sticks": this.sticks.left = [e.v[0], e.v[1]]; this.sticks.right = [e.v[2], e.v[3]]; if (this.open === "controls") { this.drawStick("left"); this.drawStick("right"); } break;
+      case "note": this.progress(undefined, e.text); break;
+    }
+  },
+
+  bind() {
+    $$("[data-open]").forEach(b => b.onclick = () => this.show(b.dataset.open));
+    $("#navTest").onclick = () => this.job("test_connection");
+    $("#btnMin").onclick = () => this.call("minimize");
+    $("#btnClose").onclick = () => this.call("close");
+    $("#btnFolder").onclick = () => this.call("open_folder");
+    $("#btnSettings").onclick = () => this.show("graphics");
+    $("#btnStart").onclick = () => this.startGame();
+    $("#logAll").onclick = () => this.show("log");
+    $("#srvTest").onclick = () => this.job("test_connection");
+    $("#wClose").onclick = () => this.hide();
+    $("#back").onclick = e => { if (e.target.id === "back") this.hide(); };
+    document.addEventListener("keydown", e => { if (e.key === "Escape") this.hide(); });
+  },
+
+  // ------------------------------------------------------------------ actions
+  async job(name) {
+    if (this.busy) return;
+    this.busy = true; this.renderStart(); this.progress(null, "Working...");
+    const r = await this.call(name);
+    if (!r || r.error) { this.busy = false; this.renderStart(); this.progress(0, ""); if (r && r.error) this.ask("Hold on, hunter", r.error); }
+  },
+  startGame() {
+    if (this.busy) return;
+    const g = this.s.game;
+    if (!g || !g.ok) { this.show("files"); return; }
+    if (g.needs_key) { this.show("files"); return; }
+    this.job("play");
+  },
+  async pick(kind) {
+    const r = await this.call(kind);
+    if (!r) return;
+    if (r.state) { Object.assign(this.s, r.state); this.render(); }
+    if (r.error) this.ask("Not found", r.error); else if (r.message) this.ask("Game files", r.message);
+  },
+  async setG(part) { const r = await this.call("set_graphics", part); if (r) { this.s.graphics = r; this.renderGraphics(); } },
+  async setC(part, quiet) { const r = await this.call("set_controls", part); if (r) { this.s.controls = r; if (!quiet) this.renderControls(); this.renderBoard(); } },
+
+  // ------------------------------------------------------------------ dialogs
+  show(which) {
+    if (this.open === "controls" && which !== "controls") this.call("pad_stop");
+    this.open = which;
+    $("#wTitle").textContent = TITLES[which];
+    $("#win").className = "win"; $("#wFoot").style.display = "none";
+    const body = $("#wBody"); body.innerHTML = ""; body.appendChild($("#tpl-" + which).content.cloneNode(true));
+    $("#back").classList.add("show");
+    $$(".navbtn").forEach(b => b.classList.toggle("on", b.dataset.open === which));
+    if (which === "files") this.bindFiles();
+    if (which === "graphics") this.bindGraphics();
+    if (which === "controls") { this.bindControls(); this.call("pad_start"); }
+    if (which === "log") this.renderLog();
+  },
+  hide() {
+    if (this.open === "controls") this.call("pad_stop");
+    this.open = null; $("#back").classList.remove("show");
+    $$(".navbtn").forEach(b => b.classList.remove("on"));
+  },
+  ask(title, text, okLabel, onOk) {
+    const prev = this.open;
+    if (prev === "controls") this.call("pad_stop");
+    this.open = "msg";
+    $("#wTitle").textContent = title; $("#win").className = "win small";
+    $("#wBody").innerHTML = '<div class="msg"></div>'; $(".msg", $("#wBody")).textContent = text;
+    const f = $("#wFoot"); f.innerHTML = ""; f.style.display = "flex";
+    const mk = (label, cls, fn) => { const b = document.createElement("button"); b.className = "b " + cls; b.textContent = label; b.onclick = fn; f.appendChild(b); };
+    if (onOk) { mk("Cancel", "", () => this.hide()); mk(okLabel, "gold", () => { this.hide(); onOk(); }); }
+    else mk("OK", "gold", () => { if (prev && prev !== "msg") this.show(prev); else this.hide(); });
+    $("#back").classList.add("show");
+  },
+
+  // ------------------------------------------------------------------ render
+  render() {
+    $("#serverName").textContent = this.s.server.name;
+    $("#lv").textContent = "Launcher " + this.s.launcher_version;
+    const c = this.s.client;
+    $("#version").textContent = "Client version: " + (c.installed ? c.version : "not installed") + (c.update ? `  (update ${c.update} available)` : "");
+    this.renderServer(); this.renderBoard(); this.renderStart(); this.renderLog();
+    if (this.open === "files") this.renderFiles();
+    if (this.open === "graphics") this.renderGraphics();
+    if (this.open === "controls") this.renderControls();
+  },
+  renderServer() {
+    const sv = this.s.server, lamp = $("#lamp");
+    lamp.className = "lamp" + (sv.ok === true ? " ok" : sv.ok === false ? " bad" : "");
+    $("#srvState").textContent = sv.ok == null ? "Contacting the server..." : sv.ok ? "Server online" : "Server offline";
+    $("#srvAddr").textContent = sv.ok == null ? "" : sv.ok ? "The gathering halls are open." : "Can't reach the server right now. Try again in a moment.";
+    $("#bChecked").textContent = sv.checked ? "Checked " + sv.checked : "";
+    $("#plateS").textContent = sv.ok == null ? "" : sv.ok ? "Online" : "Offline";
+  },
+  row(id, state, detail, label, action, gold) {
+    const r = $(id); r.className = "prow" + (state ? " " + state : "");
+    $(".mk", r).textContent = state === "warn" ? "!" : "✓";
+    $(".pt span", r).textContent = detail;
+    const b = $("button", r); b.textContent = label || ""; b.className = "b sm" + (gold ? " gold" : ""); b.onclick = action; b.disabled = !!(this.busy && gold);
+    b.style.visibility = label ? "visible" : "hidden";
+  },
+  renderBoard() {
+    const c = this.s.client, g = this.s.game, ctl = this.s.controls;
+    if (!c.installed) this.row("#pClient", "", "Not installed yet - one click, about 60 MB", "Install", () => this.job("install"), true);
+    else if (c.update) this.row("#pClient", "warn", `Version ${c.version} - update ${c.update} available`, "Update", () => this.job("install"), true);
+    else this.row("#pClient", "done", "Installed - version " + c.version, "", null);
+    if (!g) this.row("#pGame", "", "Choose your own dump (folder, .wua, .wux, .wud or .iso)", "Choose", () => this.show("files"), c.installed);
+    else if (!g.ok) this.row("#pGame", "warn", "Your game moved or was removed - choose it again", "Choose", () => this.show("files"), true);
+    else if (g.needs_key) this.row("#pGame", "warn", "Disc key needed for " + g.label.replace(/^Game file: /, ""), "Add key", () => this.show("files"), true);
+    else this.row("#pGame", "done", g.label.replace(/\s+\+\s+update v\d+$/, ""), "Change", () => this.show("files"));
+    if (g && g.update) this.row("#pUpd", "done", "Update v" + g.update_version + " - used automatically", "", null);
+    else if (g && g.ok) this.row("#pUpd", "warn", "Not found on this PC - the game starts without it", "Add", () => this.pick("pick_update"));
+    else this.row("#pUpd", "", "Found and used automatically once your game is chosen", "", null);
+    if (ctl.mode === "keep") this.row("#pPad", "done", "Your own Cemu setup", "Change", () => this.show("controls"));
+    else if (ctl.device) this.row("#pPad", "done", ctl.device.label.replace(/^PlayStation: /, ""), "Set up", () => this.show("controls"));
+    else this.row("#pPad", "", "Plug in an Xbox or PlayStation controller", "Set up", () => this.show("controls"));
+  },
+  renderStart() {
+    const b = $("#btnStart"), c = this.s.client, g = this.s.game;
+    b.classList.toggle("busy", this.busy);
+    let main = "Start Game", sub = "Depart for the gathering hall";
+    if (this.busy) { main = "Please wait"; sub = "Preparing your gear..."; }
+    else if (!g || !g.ok || g.needs_key) { main = "Choose Game"; sub = "Select your copy of MH3U"; }
+    else if (!c.installed) sub = "Installs the game client first";
+    b.innerHTML = `${main}<small>${sub}</small>`;
+    this.renderBoard();
+  },
+  progress(frac, text) {
+    if (text !== undefined && text !== null) $("#dlText").textContent = text;
+    const dl = $("#dl");
+    if (frac === undefined) return;
+    if (frac === null) { dl.classList.add("indet"); $("#dlPct").textContent = ""; return; }
+    dl.classList.remove("indet");
+    $("#dlFill").style.width = Math.round(frac * 100) + "%";
+    $("#dlPct").textContent = frac > 0 && frac < 1 ? Math.round(frac * 100) + "%" : "";
+  },
+  renderLog() {
+    const line = l => `<div><span class="t">${esc(l.time || "")}</span>${esc(l.text)}</div>`;
+    $("#latest").innerHTML = this.log.slice(-3).map(line).join("") || '<div class="t">Your actions and the game\'s status show up here.</div>';
+    const box = $("#logBox");
+    if (box) { box.innerHTML = this.log.map(line).join("") || '<div class="t">Nothing yet.</div>'; box.scrollTop = box.scrollHeight; }
+  },
+
+  // files
+  bindFiles() {
+    $("#fInstall").onclick = () => { this.hide(); this.job("install"); };
+    $("#fFolder").onclick = () => this.pick("pick_folder");
+    $("#fFile").onclick = () => this.pick("pick_file");
+    $("#fAddUpd").onclick = () => this.pick("pick_update");
+    $("#fOpenUpd").onclick = async () => { const r = await this.call("open_updates_folder"); if (r && r.error) this.ask("Updates folder", r.error); };
+    $("#fKeySave").onclick = async () => { const r = await this.call("set_disc_key", $("#fKey").value); if (r) { if (r.state) Object.assign(this.s, r.state); this.render(); this.ask("Disc key", r.error || r.message); } };
+    this.renderFiles();
+  },
+  renderFiles() {
+    const c = this.s.client, g = this.s.game, v = $("#fClient"), bi = $("#fInstall");
+    if (!c.installed) { v.className = "v"; v.textContent = "Not installed yet - about 60 MB."; bi.textContent = "Install"; bi.style.display = ""; }
+    else if (c.update) { v.className = "v warnc"; v.textContent = `Version ${c.version}: update ${c.update} available.`; bi.textContent = "Update"; bi.style.display = ""; }
+    else { v.className = "v good"; v.textContent = "✓ Installed - version " + c.version; bi.style.display = "none"; }
+    bi.disabled = this.busy;
+    const gt = $("#fGame");
+    if (!g) { gt.className = "t"; gt.textContent = "No game chosen yet"; }
+    else if (!g.ok) { gt.className = "t badc"; gt.textContent = "Your game moved or was removed - choose it again"; }
+    else { gt.className = "t good"; gt.textContent = "✓ " + g.label; }
+    const ut = $("#fUpd");
+    if (g && g.update) { ut.className = "t good"; ut.textContent = "✓ Update v" + g.update_version + " found"; }
+    else { ut.className = "t warnc"; ut.textContent = g && g.ok ? "Not found on this PC - the game starts without it" : "Choose your game first"; }
+    $("#fKeyBox").style.display = g && g.disc ? "" : "none";
+    const st = $("#fSnd");
+    const fx = this.s.sound_fix;
+    if (this.s.sound_libs) { st.className = "t good"; st.textContent = "✓ Wii U sound files installed - real reverb"; }
+    else if (fx === "fixed" || fx === "fixable") { st.className = "t good"; st.textContent = fx === "fixed" ? "✓ Fixed - clean effects, no reverb" : "✓ Fixed when you press Start Game"; }
+    else { st.className = "t warnc"; st.textContent = c.installed ? "Not fixed for this game client - footsteps and ambience sound hollow" : "Install the game client first"; }
+  },
+
+  // graphics
+  seg(el, items, cur, fn) {
+    el.innerHTML = "";
+    items.forEach(([val, label, tag]) => { const b = document.createElement("button"); b.className = val === cur ? "on" : ""; b.innerHTML = esc(label) + (tag ? `<span class="tag">${esc(tag)}</span>` : ""); b.onclick = () => fn(val); el.appendChild(b); });
+  },
+  bindGraphics() {
+    $("#gPad").onchange = e => this.setG({gamepad_window: e.target.checked});
+    $("#gVs").onchange = e => this.setG({vsync: e.target.checked});
+    $("#gFc").onchange = e => this.setG({show_fps: e.target.checked});
+    this.renderGraphics();
+  },
+  renderGraphics() {
+    const g = this.s.graphics;
+    this.seg($("#gRes"), RES, g.resolution, v => this.setG({resolution: v}));
+    this.seg($("#gFps"), FPS, g.fps, v => this.setG({fps: v}));
+    this.seg($("#gSh"), SHADOWS, g.shadows, v => this.setG({shadows: v}));
+    this.seg($("#gAn"), ANISO, g.aniso, v => this.setG({aniso: v}));
+    this.seg($("#gDisp"), [[false, "Window", ""], [true, "Fullscreen", ""]], g.fullscreen, v => this.setG({fullscreen: v}));
+    this.seg($("#gApi"), [["vulkan", "Vulkan", "recommended"], ["opengl", "OpenGL", ""]], g.api, v => this.setG({api: v}));
+    this.seg($("#gSnd"), [["stereo", "Stereo", "default"], ["surround", "Surround 5.1", ""]], g.sound || "stereo", v => this.setG({sound: v}));
+    this.seg($("#gAud"), [["xaudio2", "XAudio2", "default"], ["cubeb", "Cubeb", ""]], g.audio_api || "xaudio2", v => this.setG({audio_api: v}));
+    $("#gPad").checked = g.gamepad_window; $("#gVs").checked = g.vsync; $("#gFc").checked = g.show_fps;
+    const n = $("#gFpsN"), hz = this.s.refresh_hz;
+    n.className = "n";
+    if (g.fps.startsWith("120")) { n.className = "n warn"; n.textContent = "Experimental: the 60 FPS fixes scaled to 120. Needs a strong PC and a 120 Hz+ screen" + (hz && hz < 120 ? ` (yours runs at ${hz} Hz, so you'd still see 60)` : "") + ". Needs the game update. If anything feels off, go back to 60."; }
+    else if (g.fps.startsWith("60")) n.textContent = "Smooth, half the input lag, and the 60 FPS speed bugs fixed (camera, lance, buffs). Needs the game update.";
+    else if (g.fps.startsWith("30")) n.textContent = "Exactly as the game was made for the Wii U.";
+    else n.textContent = "";
+    $("#gResN").textContent = /^(32|38)/.test(g.resolution) ? "Needs a strong graphics card." : "";
+  },
+
+  // controls
+  bindControls() {
+    $("#cRum").onchange = e => this.setC({rumble: e.target.checked});
+    $("#cCemu").onclick = () => this.ask("Cemu's own settings", "Cemu opens without the game. Go to Options > Input settings, set up your controller or keyboard, then close Cemu.\n\nThe launcher keeps your own setup from then on.", "Open Cemu", () => this.job("open_cemu"));
+    $$(".stick").forEach(el => {
+      const side = el.dataset.side, dz = $(".dz-in", el), rg = $(".rg-in", el);
+      const upd = save => {
+        this.s.controls[side + "_deadzone"] = +dz.value / 100; this.s.controls[side + "_range"] = +rg.value / 100; this.drawStick(side);
+        if (save) this.setC({[side + "_deadzone"]: +dz.value / 100, [side + "_range"]: +rg.value / 100}, true);
+      };
+      dz.oninput = rg.oninput = () => upd(false); dz.onchange = rg.onchange = () => upd(true);
+    });
+    this.renderControls();
+  },
+  renderControls() {
+    const c = this.s.controls;
+    this.seg($("#cMode"), [["auto", "Set up my controller for me", ""], ["keep", "Keep my own Cemu setup", ""]], c.mode, v => this.setC({mode: v}));
+    $("#cAuto").style.display = c.mode === "auto" ? "" : "none"; $("#cKeep").style.display = c.mode === "auto" ? "none" : "";
+    this.seg($("#cConf"), [[false, "Right button", "Wii U style: B / Circle"], [true, "Bottom button", "A / Cross"]], c.confirm_bottom, v => this.setC({confirm_bottom: v}));
+    $("#cRum").checked = c.rumble;
+    $$(".stick").forEach(el => { const s = el.dataset.side; $(".dz-in", el).value = Math.round(c[s + "_deadzone"] * 100); $(".rg-in", el).value = Math.round(c[s + "_range"] * 100); this.drawStick(s); });
+    this.renderDevices();
+  },
+  renderDevices() {
+    const list = $("#cDevs"); if (!list) return;
+    const devs = this.s.devices, sel = this.s.controls.device;
+    if (devs == null) { list.innerHTML = '<div class="empty">Looking for controllers...</div>'; return; }
+    if (!devs.length) { list.innerHTML = '<div class="empty">No controller found. Plug in your Xbox or PlayStation controller (USB or Bluetooth) and it appears here.</div>'; return; }
+    list.innerHTML = "";
+    devs.forEach(d => {
+      const b = document.createElement("button");
+      b.className = "device" + (sel && sel.key === d.key ? " on" : "");
+      const kind = {xbox: "Xbox controller", playstation: "PlayStation controller"}[d.kind] || "Controller";
+      b.innerHTML = `<svg><use href="#pad"/></svg><div><div class="n">${esc(d.label)}</div><div class="k">${kind}</div></div><span class="tick">&#10003;</span>`;
+      b.onclick = async () => { const r = await this.call("select_device", d.key); if (r) { this.s.controls = r; this.renderDevices(); this.renderBoard(); } };
+      list.appendChild(b);
+    });
+  },
+  drawStick(side) {
+    const el = $(`.stick[data-side="${side}"]`); if (!el) return;
+    const c = this.s.controls, dz = c[side + "_deadzone"], rg = c[side + "_range"], R = 52;
+    $(".vdz", el).textContent = Math.round(dz * 100) + "%"; $(".vrg", el).textContent = Math.round(rg * 100) + "%";
+    setP($(".dz-in", el)); setP($(".rg-in", el));
+    $(".dz", el).setAttribute("r", Math.max(.01, dz * R)); $(".full", el).setAttribute("r", Math.min(R, R / rg));
+    const [x, y] = this.sticks[side], len = Math.min(1, Math.hypot(x, y));
+    const out = len < dz || len <= 0 ? 0 : Math.max(0, Math.min(1, (len * rg - dz) / (1 - dz)));
+    $(".raw", el).setAttribute("cx", x * R); $(".raw", el).setAttribute("cy", y * R);
+    $(".out", el).setAttribute("cx", len ? x / len * out * R : 0); $(".out", el).setAttribute("cy", len ? y / len * out * R : 0);
+    $(".out", el).style.opacity = out > 0 ? 1 : 0;
+    $(".r1", el).textContent = Math.round(len * 100) + "%"; $(".r2", el).textContent = Math.round(out * 100) + "%";
+  },
+  showPressed(codes) {
+    const box = $("#cPressed"); if (!box) return;
+    const c = this.s.controls, dev = c.device || {kind: "other", api: "SDLController"};
+    const phys = dev.api === "XInput" ? PHYS.xbox : (PHYS[dev.kind] || PHYS.other);
+    const map = (this.s.mapping || {})[dev.api + (dev.api !== "XInput" && dev.kind === "playstation" ? ":ps" : "") + (c.confirm_bottom ? ":bottom" : ":wiiu")] || {};
+    box.innerHTML = "";
+    codes.forEach(code => { const w = map[code]; const s = document.createElement("span"); s.className = "chip"; s.innerHTML = `${esc(phys[code] || "Button " + code)} &rarr; ${w ? "Wii U <b>" + esc(w) + "</b>" : "<i>not used</i>"}`; box.appendChild(s); });
+  },
+};
+window.MH = MH;
+function esc(s) { return String(s).replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c])); }
+function setP(i) { i.style.setProperty("--p", ((i.value - i.min) / (i.max - i.min) * 100) + "%"); }
+
+function boot(api) { MH.start(api); }
+window.addEventListener("pywebviewready", () => boot(window.pywebview.api));
+if (window.pywebview && window.pywebview.api) boot(window.pywebview.api);
+if (/[?&]mock/.test(location.search)) setTimeout(() => boot(mockApi()), 50);
+
+function mockApi() {
+  const st = {
+    server: {name: "MH3U Online", ok: true, checked: "21:06"},
+    client: {installed: true, version: "v0.2.1-beta", update: null},
+    game: {ok: true, kind: "folder", label: "Monster Hunter 3 Ultimate (EU)  +  update v32", update: true, update_version: 32, region: "EU", disc: false, needs_key: false},
+    graphics: {resolution: "2560x1440 (2K)", fps: "60 FPS (normalized beta)", shadows: "High (200%)", aniso: "16x", fullscreen: false, vsync: false, show_fps: false, gamepad_window: false, api: "vulkan", sound: "stereo", audio_api: "xaudio2"},
+    controls: {mode: "auto", device: {key: "sdl:0_x", api: "SDLController", kind: "playstation", label: "PlayStation: DualSense Wireless Controller"}, confirm_bottom: false, rumble: true, left_deadzone: .08, left_range: 1.3, right_deadzone: .08, right_range: 1.3},
+    devices: [{key: "sdl:0_x", api: "SDLController", kind: "playstation", label: "PlayStation: DualSense Wireless Controller"}, {key: "xinput:0", api: "XInput", kind: "xbox", label: "Xbox controller (slot 1)"}],
+    mapping: {"SDLController:ps:wiiu": {"1": "A", "0": "B", "3": "X", "2": "Y", "9": "L", "10": "R", "42": "ZL", "43": "ZR", "6": "+", "4": "-", "20": "switch screens"}},
+    refresh_hz: 144, launcher_version: "1.0.0", sound_libs: false, sound_fix: "fixed",
+    log: [{time: "21:04", text: "Game client ready (v0.2.1-beta, 317 files)."}, {time: "21:05", text: "Game found: Monster Hunter 3 Ultimate (EU) + update v32"}, {time: "21:06", text: "Connection OK - the server answered."}],
+  };
+  const ok = v => Promise.resolve(v);
+  let t = 0; setInterval(() => { t += .05; MH.event({type: "sticks", v: [Math.cos(t) * .55, Math.sin(t * 1.3) * .55, Math.sin(t) * .25, Math.cos(t * .7) * .3]}); }, 50);
+  return {
+    get_state: () => ok(st), set_graphics: p => ok(Object.assign(st.graphics, p)), set_controls: p => ok(Object.assign(st.controls, p)),
+    select_device: k => ok(Object.assign(st.controls, {device: st.devices.find(d => d.key === k)})),
+    pad_start: () => { setTimeout(() => MH.event({type: "pressed", codes: [0, 43]}), 800); return ok(true); }, pad_stop: () => ok(true), minimize: () => ok(true), close: () => ok(true), open_folder: () => ok(true),
+    pick_folder: () => ok({message: "Monster Hunter 3 Ultimate (EU) + update v32\n\nReady when you are."}), pick_file: () => ok(null), pick_update: () => ok(null), open_updates_folder: () => ok({ok: true}), set_disc_key: () => ok({message: "Disc key saved."}),
+    install: () => ok({ok: true}), test_connection: () => { setTimeout(() => MH.event({type: "done", message: "Connection OK"}), 700); return ok({ok: true}); }, open_cemu: () => ok({ok: true}),
+    play: () => { let f = 0; const iv = setInterval(() => { f += .1; MH.event({type: "progress", frac: Math.min(1, f), text: "Preparing your gear..."}); if (f >= 1) { clearInterval(iv); MH.event({type: "done", message: "Game started - good hunting!"}); } }, 200); return ok({ok: true}); },
+  };
+}
+</script>
+</body>
+</html>
