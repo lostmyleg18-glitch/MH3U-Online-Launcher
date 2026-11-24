@@ -444,7 +444,7 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px;
     <div class="row"><button class="b gold" id="fOpenUpd">Open updates folder</button><button class="b" id="fAddUpd">Add update folder</button></div>
     <div class="hint">Don't have it? On your Wii U, start MH3U once while online so the console downloads the update. Then dump it with <b>Dumpling</b>, the same homebrew app used to dump the game: choose its <b>Dump game update</b> option. Copy the <b>[Update]</b> folder into the <b>updates</b> folder.</div></div>
   <div class="sect">Sound effects</div>
-  <div class="box"><div class="t" id="fSnd">Wii U sound files missing</div><div class="d">Footsteps, ambience and other effects go through the Wii U's own reverb. The game client only has a stand-in for it, which made them sound hollow, as if through a tube. The launcher fixes the stand-in, so they sound clean, just without reverb. For the real reverb, add two files from your own Wii U: <b>snd_user.rpl</b> and <b>snduser2.rpl</b>. Put them in the <b>updates</b> folder and the launcher installs them.</div>
+  <div class="box"><div class="t" id="fSnd">Wii U sound files missing</div><div class="d">Footsteps, ambience and other effects go through the Wii U's own reverb. The game client only has a stand-in for it, which made them sound hollow, as if through a tube. The launcher fixes the stand-in, so they sound clean, just without reverb. It also fixes a soft crackle on stomps and monster sounds. For the real reverb, add two files from your own Wii U: <b>snd_user.rpl</b> and <b>snduser2.rpl</b>. Put them in the <b>updates</b> folder and the launcher installs them.</div>
     <div class="hint">Copy them from your Wii U with the FTPiiU plugin and an FTP program: they're in <b>storage_slc/sys/title/00050010/1000400a/code</b>. Only copy, never delete or rename anything there: that would brick the console.</div></div>
   <div class="box" id="fKeyBox" style="display:none"><div class="t">Disc key</div><div class="d">Disc images (.wud / .wux / .iso) need the disc key that was dumped with them. The launcher reads it from game.key next to the image, or from a <b>keys.txt</b> next to MH3U_Play.exe, at every start. Otherwise paste it here.</div>
     <div class="keyrow"><input id="fKey" maxlength="40" placeholder="32 characters, 0-9 and a-f" spellcheck="false"><button class="b gold" id="fKeySave">Save key</button></div></div>
@@ -720,7 +720,7 @@ const MH = {
     const fx = this.s.sound_fix;
     if (this.s.sound_libs) { st.className = "t good"; st.textContent = "✓ Wii U sound files installed - real reverb"; }
     else if (fx === "fixed" || fx === "fixable") { st.className = "t good"; st.textContent = fx === "fixed" ? "✓ Fixed - clean effects, no reverb" : "✓ Fixed when you press Start Game"; }
-    else { st.className = "t warnc"; st.textContent = c.installed ? "Not fixed for this game client - footsteps and ambience sound hollow" : "Install the game client first"; }
+    else { st.className = "t warnc"; st.textContent = c.installed ? "Not fixed for this game client - effects sound hollow and crackle" : "Install the game client first"; }
   },
 
   // graphics

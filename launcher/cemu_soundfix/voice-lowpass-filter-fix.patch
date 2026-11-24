@@ -1,0 +1,32 @@
+diff --git a/src/Cafe/OS/libs/snd_core/ax_mix.cpp b/src/Cafe/OS/libs/snd_core/ax_mix.cpp
+index 02483cf..003d74e 100644
+--- a/src/Cafe/OS/libs/snd_core/ax_mix.cpp
++++ b/src/Cafe/OS/libs/snd_core/ax_mix.cpp
+@@ -799,15 +799,21 @@ namespace snd_core
+ 	{
+ 		if (internalShadowCopy->lpf.on == _swapEndianU16(AX_LPF_OFF))
+ 			return;
+-		float a0 = (float)_swapEndianS16(internalShadowCopy->lpf.a0) / 32767.0f;
+-		float b0 = (float)_swapEndianS16(internalShadowCopy->lpf.b0) / 32767.0f;
+-		float prevSample = (float)_swapEndianS16((sint16)internalShadowCopy->lpf.yn1) * 256.0f / 32767.0f;
++		// one-pole low-pass: y[n] = (a0 * x[n] + b0 * y[n-1]) >> 15, output clamped to 16 bit
++		// a0 and b0 are Q15 (AXComputeLpfCoefs gives a0 + b0 = 0x7FFF, so DC passes at unity gain)
++		// yn1 holds the last output as a 16-bit sample, it carries the filter state into the next frame
++		float a0 = (float)_swapEndianU16(internalShadowCopy->lpf.a0) / 32768.0f;
++		float b0 = (float)_swapEndianS16(internalShadowCopy->lpf.b0) / 32768.0f;
++		float prevSample = (float)_swapEndianS16((sint16)internalShadowCopy->lpf.yn1) * 256.0f;
+ 		for (sint32 i = 0; i < sampleCount; i++)
+ 		{
+-			sampleData[i] = a0 * sampleData[i] - b0 * prevSample;
+-			prevSample = sampleData[i];
++			float y = a0 * sampleData[i] + b0 * prevSample;
++			y = std::min(y, 8388352.0f); // 32767 << 8
++			y = std::max(y, -8388608.0f); // -32768 << 8
++			sampleData[i] = y;
++			prevSample = y;
+ 		}
+-		internalShadowCopy->lpf.yn1 = (uint16)_swapEndianS16((sint16)(prevSample / 256.0f * 32767.0f));
++		internalShadowCopy->lpf.yn1 = (uint16)_swapEndianS16((sint16)(prevSample / 256.0f));
+ 	}
+ 
+ 	// mix audio generated from voice into main bus and aux buses

@@ -47,7 +47,7 @@ SERVER_NAME = "MH3U Online"          # window title
 SERVER_HOST_FILE = "server.txt"
 STATUS_PORT = 0                     # MH3U_STATUS_PORT on the server (0 = none, the setup default)
 NATCHECK_PORT = 10025
-LAUNCHER_VERSION = "1.0.0"
+LAUNCHER_VERSION = "1.0.1"
 
 # ============================================================================ sources
 GITHUB_REPO = "Matt-Wood-23/mh3u-revival"
@@ -1091,11 +1091,13 @@ def public_device(dev) -> dict:
 
 # ============================================================================ jobs
 # ============================================================================ sound fix (patched Cemu)
-# MH3U Revival's game client (Cemu, Matt-Wood-23/Cemu mh3u-revival at 3163f35) has Cemu's bug
-# in its stand-in for the Wii U's reverb: it clears only the first of the reverb's channels, so
-# every effect sound is played again a frame late and footsteps and ambience sound hollow. The
-# launcher carries that same Cemu built with the fix (cemu_soundfix\, see its README) and swaps
-# it in for exactly that client. Any other client (a newer MH3U Revival release) is left alone.
+# MH3U Revival's game client (Cemu, Matt-Wood-23/Cemu mh3u-revival at 3163f35) has two Cemu
+# sound bugs. Its stand-in for the Wii U's reverb clears only the first of the reverb's channels,
+# so every effect sound is played again a frame late and footsteps and ambience sound hollow. And
+# its voice low-pass filter has the wrong sign and loses its state every 3 ms audio frame, so
+# low-passed sounds (stomps, monster sounds) crackle softly. The launcher carries that same Cemu
+# built with both fixes (cemu_soundfix\, see its README) and swaps it in for exactly that client
+# or an earlier build of the fix. Any other client (a newer MH3U Revival release) is left alone.
 SOUNDFIX_DIR = "cemu_soundfix"
 _HASH_CACHE = {}
 
@@ -1158,9 +1160,9 @@ def install_sound_fix(root, log) -> None:
     """Called whenever Cemu isn't running and is about to be used or was just installed."""
     try:
         if apply_sound_fix(root, soundfix_info()):
-            log("Sound fix installed: footsteps, ambience and other effects no longer sound hollow.")
+            log("Sound fix installed: effects no longer sound hollow, stomps and monster sounds no longer crackle.")
     except OSError as e:
-        log(f"Couldn't install the sound fix ({e}). The game still starts, with the hollow effect sounds.")
+        log(f"Couldn't install the sound fix ({e}). The game still starts, with hollow and crackling effect sounds.")
 
 
 def job_install(root, log, progress, remote=None) -> None:

@@ -39,8 +39,8 @@ their own releases:
   MH3U Revival frame-rate pack                     from the same release
   Cemu graphic packs                               https://github.com/cemu-project/cemu_graphic_packs
 
-MH3U_Play.exe replaces that Cemu with the same Cemu plus a fix for hollow-sounding
-effects, which it carries itself. That one and its parts are listed at the end of
+MH3U_Play.exe replaces that Cemu with the same Cemu plus fixes for hollow-sounding
+and crackling effects, which it carries itself. That one and its parts are listed at the end of
 this file ("THE GAME CLIENT INSIDE MH3U_Play.exe").
 
 
@@ -1545,10 +1545,11 @@ THE GAME CLIENT INSIDE MH3U_Play.exe (Cemu with the sound fix)
 ==============================================================================
 
 MH3U_Play.exe also contains Cemu_release.exe, the game client it puts in place of
-MH3U Revival's own client to fix hollow-sounding effects (see the launcher source,
-folder cemu_soundfix). It is Cemu (https://cemu.info, Mozilla Public License 2.0),
-built from https://github.com/Matt-Wood-23/Cemu, branch mh3u-revival, commit
-3163f35, with one change: cemu_soundfix\snd_user-aux-effect-stub-fix.patch.
+MH3U Revival's own client to fix hollow-sounding and crackling effects (see the
+launcher source, folder cemu_soundfix). It is Cemu (https://cemu.info, Mozilla Public
+License 2.0), built from https://github.com/Matt-Wood-23/Cemu, branch mh3u-revival,
+commit 3163f35, with two changes: cemu_soundfix\snd_user-aux-effect-stub-fix.patch
+and cemu_soundfix\voice-lowpass-filter-fix.patch.
 
 libusb is linked into it statically. Under the LGPL you may change libusb and
 relink: all of Cemu's source is public at the address above, and
@@ -1557,7 +1558,7 @@ from Microsoft's DirectX SDK (June 2010), as in Cemu's own source.
 
 Cemu_release.exe contains the parts below. Their license texts follow.
 
-  Cemu (MH3U Revival fork, with the sound fix)   3163f35+fix    MPL-2.0
+  Cemu (MH3U Revival fork, with the sound fix)   3163f35+fixes  MPL-2.0
   cubeb                                                         ISC
   Dear ImGui                                                    MIT
   ZArchive                                                      MIT-0

@@ -1,9 +1,10 @@
 {
-  "version": "Cemu 0ad6757",
-  "sha256": "ea2acbe517d1f9cf10b244b1e516826de2fb70a99e48d4fd9507e4dae0e5305f",
+  "version": "Cemu e8da518",
+  "sha256": "c2452dd602014380d67d46e7761ee29117206ec822c20d99cb81574b317be722",
   "replaces": [
-    "c7fad061e614609a717cdee75b882f97b3f9de9890ef326d2b5ffff191edbb07"
+    "c7fad061e614609a717cdee75b882f97b3f9de9890ef326d2b5ffff191edbb07",
+    "ea2acbe517d1f9cf10b244b1e516826de2fb70a99e48d4fd9507e4dae0e5305f"
   ],
-  "replaces_note": "Cemu_release.exe of MH3U Revival v0.2.1-beta and v0.3.0-beta (identical)",
-  "source": "https://github.com/Matt-Wood-23/Cemu branch mh3u-revival, commit 3163f35, plus snd_user-aux-effect-stub-fix.patch"
+  "replaces_note": "Cemu_release.exe of MH3U Revival v0.2.1-beta and v0.3.0-beta (identical), and the earlier sound-fix build Cemu 0ad6757 (launcher 1.0.0)",
+  "source": "https://github.com/Matt-Wood-23/Cemu branch mh3u-revival, commit 3163f35, plus snd_user-aux-effect-stub-fix.patch and voice-lowpass-filter-fix.patch"
 }

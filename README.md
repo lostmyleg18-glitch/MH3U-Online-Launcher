@@ -49,7 +49,8 @@ the newest update it finds there. **Game Files** in the launcher shows what it f
   swaps the screens.
 - **Graphics:** up to 4K, 60 FPS by default, 120 FPS experimental.
 - **Sound:** stereo through XAudio2 by default; **Graphics** has 5.1 surround and Cubeb.
-  The launcher installs a fixed game client, so footsteps and ambience no longer sound hollow.
+  The launcher installs a fixed game client, so footsteps and ambience no longer sound hollow
+  and stomps and monster sounds no longer crackle.
   For the game's real reverb, copy `snd_user.rpl` and `snduser2.rpl` from your own Wii U
   (`storage_slc/sys/title/00050010/1000400a/code`, for example with the FTPiiU plugin) into the
   `updates` folder. Only copy them: never delete or rename anything in that folder on the console.
@@ -72,8 +73,8 @@ See [BUILDING.md](BUILDING.md). The server address isn't in the code: it goes in
   ([LICENSE](LICENSE)).
 - It builds on [MH3U Revival](https://github.com/Matt-Wood-23/mh3u-revival) (AGPL-3.0), which
   provides the server and the patched Cemu.
-- `MH3U_Play.exe` carries a build of that Cemu (Mozilla Public License 2.0) with a fix for
-  hollow-sounding effects: [launcher/cemu_soundfix](launcher/cemu_soundfix).
+- `MH3U_Play.exe` carries a build of that Cemu (Mozilla Public License 2.0) with fixes for
+  hollow-sounding and crackling effects: [launcher/cemu_soundfix](launcher/cemu_soundfix).
 - [THIRD-PARTY-NOTICES.txt](THIRD-PARTY-NOTICES.txt) lists every part inside `MH3U_Play.exe`
   and its license.
 
