@@ -40,8 +40,8 @@ their own releases:
   Cemu graphic packs                               https://github.com/cemu-project/cemu_graphic_packs
 
 MH3U_Play.exe replaces that Cemu with the same Cemu plus fixes for hollow-sounding
-and crackling effects, which it carries itself. That one and its parts are listed at the end of
-this file ("THE GAME CLIENT INSIDE MH3U_Play.exe").
+and crackling effects, which it carries itself. That one and its parts are listed
+at the end of this file ("THE GAME CLIENT INSIDE MH3U_Play.exe").
 
 
 ==============================================================================
